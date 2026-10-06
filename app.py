@@ -38,8 +38,8 @@ def chat():
         if not API_KEY:
             return jsonify({'response': '🚨 **API Key Eksik:** Render panelinde `GEMINI_API_KEY` tanımlı değil.'})
 
-        # Güncel Gemini 2.0 Flash REST API Adresi
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={API_KEY}"
+        # Güncel Gemini 2.5 Flash REST API Adresi
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={API_KEY}"
         
         payload = {
             "system_instruction": {
