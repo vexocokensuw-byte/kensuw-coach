@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PUBG Mobile AI Coach & Analyst</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="chat-card">
+        <!-- Başlık Bölümü -->
+        <div class="chat-header">
+            <div>
+                <h1>🪂 KENSUW COACH</h1>
+                <p>IGL & Koç Analiz Asistanı</p>
+            </div>
+            <div>
+                <select id="map">
+                    <option value="Erangel">Erangel</option>
+                    <option value="Miramar">Miramar</option>
+                    <option value="Vikendi">Vikendi</option>
+                    <option value="Rondo">Rondo</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Mesajların Aktığı Alan -->
+        <div class="chat-box" id="chatBox">
+            <div class="message ai-message">
+                👋 <b>Merhaba Commander!</b> Ben PUBG Mobile AI Koçunuz Kensuw.<br>
+                Harita stratejileri, rotasyonlar, drop bölgeleri veya maç içi durumlar hakkında istediğin soruyu sorabilirsin.
+            </div>
+        </div>
+
+        <!-- Yazı Yazma Alanı (Kutucuk) -->
+        <div class="chat-input-area">
+            <input type="text" id="userInput" placeholder="Koçuna bir şey sor... (Örn: Erangel'de Mylta Power drop spotu iyi mi?)">
+            <button onclick="sendMessage()">Gönder 🎯</button>
+        </div>
+    </div>
+<script src="script.js"></script>
+</body>
+</html>
