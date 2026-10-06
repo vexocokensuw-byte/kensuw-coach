@@ -1,9 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     const maps = {
         erangel: {
-            title: "ERANGEL TACTICAL MAP (MILITARY GRID)",
-            mainFill: "#1b3823",
-            subShow: true,
+            img: "erangel.jpg",
             cities: [
                 { name: "Pochinki (Main)", x: "47%", y: "49%", info: "Pochinki: Erangel merkez drop ve rotasyon kavşağı." },
                 { name: "School & Apartments", x: "53%", y: "42%", info: "School: Erken çatışma ve çatı kontrol noktası." },
@@ -13,9 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ]
         },
         miramar: {
-            title: "MIRAMAR TACTICAL MAP (MILITARY GRID)",
-            mainFill: "#42321e",
-            subShow: false,
+            img: "miramar.jpg",
             cities: [
                 { name: "Pecado (Main)", x: "48%", y: "54%", info: "Pecado: Miramar kalbi. Casino ve Arena noktası." },
                 { name: "Hacienda del Patron", x: "60%", y: "39%", info: "Hacienda: Dar alanda hızlı temizleme bölgesi." },
@@ -24,9 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ]
         },
         rondo: {
-            title: "RONDO TACTICAL MAP (MILITARY GRID)",
-            mainFill: "#1a2c3d",
-            subShow: false,
+            img: "rondo.jpg",
             cities: [
                 { name: "Jadam City (Main)", x: "52%", y: "58%", info: "Jadam City: Yüksek dikey binalar." },
                 { name: "NEOX Factory", x: "70%", y: "35%", info: "NEOX Factory: Fabrika bölgesi." },
@@ -41,6 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let isPencilActive = true;
     let isCityActive = true;
 
+    const mapImg = document.getElementById("mapRealImage");
     const canvas = document.getElementById("drawCanvas");
     const ctx = canvas.getContext("2d");
     const container = document.getElementById("mapDisplayContainer");
@@ -56,25 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function switchMap(key) {
         currentMapKey = key;
-        const m = maps[key];
-
-        document.getElementById("mainIsland").setAttribute("fill", m.mainFill);
-        document.getElementById("mapTitle").textContent = m.title;
-
-        const sub = document.getElementById("subIsland");
-        const b1 = document.getElementById("bridge1");
-        const b2 = document.getElementById("bridge2");
-
-        if (m.subShow) {
-            sub.style.display = "block";
-            b1.style.display = "block";
-            b2.style.display = "block";
-        } else {
-            sub.style.display = "none";
-            b1.style.display = "none";
-            b2.style.display = "none";
-        }
-
+        mapImg.src = maps[key].img;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         renderCities();
     }
