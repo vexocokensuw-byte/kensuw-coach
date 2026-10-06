@@ -4,17 +4,83 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KENSUW AI COACH - PUBG Mobile IGL & Taktik Koçu</title>
-    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background-color: #0b1017; color: #e2e8f0; height: 100vh; overflow: hidden; }
+        .app-container { display: flex; width: 100vw; height: 100vh; position: relative; }
+
+        /* SOL PANEL: HARİTA */
+        .map-section { width: 60%; height: 100%; background-color: #111827; display: flex; flex-direction: column; border-right: 1px solid #1e293b; position: relative; }
+        .map-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background-color: #1a2332; border-bottom: 1px solid #243147; }
+        .brand-title { display: flex; align-items: center; gap: 8px; font-weight: 700; color: #34c759; font-size: 16px; }
+        .map-selector { display: flex; gap: 8px; }
+        .map-btn { background: #1e293b; color: #94a3b8; border: 1px solid #334155; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; }
+        .map-btn.active, .map-btn:hover { background: linear-gradient(135deg, #007aff, #34c759); color: #ffffff; border-color: transparent; box-shadow: 0 0 12px rgba(52, 199, 89, 0.3); }
+        .mobile-map-close { display: none; background: transparent; border: none; color: #ef4444; font-size: 22px; cursor: pointer; }
+
+        .map-display-container { flex: 1; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #152315 0%, #080d08 100%); border-bottom: 1px solid #1a2332; }
+        .map-wrapper { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+        #drawingCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: crosshair; }
+
+        /* ŞEHİR DOKUNMA NOKTALARI */
+        #cityOverlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: none; }
+        #cityOverlay.active { display: block; }
+        .city-dot { position: absolute; width: 16px; height: 16px; background-color: #007aff; border: 2px solid #ffffff; border-radius: 50%; cursor: pointer; transform: translate(-50%, -50%); pointer-events: auto; box-shadow: 0 0 10px #007aff; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: translate(-50%, -50%) scale(0.9); } 70% { transform: translate(-50%, -50%) scale(1.2); } 100% { transform: translate(-50%, -50%) scale(0.9); } }
+
+        /* ALT ARAÇ BARI */
+        .map-controls { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; background-color: #1a2332; gap: 12px; }
+        .control-group { display: flex; align-items: center; gap: 10px; }
+        .tool-btn { background-color: #1e293b; color: #e2e8f0; border: 1px solid #334155; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px; }
+        .color-palette { display: flex; gap: 6px; align-items: center; }
+        .color-picker { width: 18px; height: 18px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
+        .color-picker.active { border-color: #ffffff; transform: scale(1.2); }
+        .thickness-select { background: #0f172a; color: #ffffff; border: 1px solid #334155; border-radius: 4px; padding: 4px 6px; font-size: 12px; }
+        .tool-btn-danger { background: #ef444422; border: 1px solid #ef444466; color: #ef4444; padding: 8px 10px; border-radius: 6px; cursor: pointer; }
+
+        /* SAĞ PANEL: CHAT */
+        .chat-section { flex: 1; height: 100%; display: flex; flex-direction: column; background-color: #0b1017; }
+        .chat-header { padding: 16px 20px; background-color: #161f2c; border-bottom: 1px solid #222f43; }
+        .chat-title { display: flex; align-items: center; gap: 12px; }
+        .chat-title i { font-size: 24px; color: #34c759; }
+        .chat-title h2 { font-size: 16px; color: #ffffff; }
+        .sub-status { font-size: 12px; color: #94a3b8; }
+        .mobile-map-trigger-container { display: none; padding: 10px; background-color: #111827; }
+        .mobile-map-open-btn { width: 100%; padding: 12px; background: linear-gradient(135deg, #007aff, #34c759); color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 14px; cursor: pointer; }
+
+        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+        .message { display: flex; max-width: 90%; }
+        .ai-message { align-self: flex-start; }
+        .user-message { align-self: flex-end; }
+        .message-content { padding: 14px 18px; border-radius: 12px; font-size: 14px; line-height: 1.6; }
+        .ai-message .message-content { background-color: #16202e; border: 1px solid #223046; color: #e2e8f0; }
+        .user-message .message-content { background: linear-gradient(135deg, #007aff, #0056b3); color: #ffffff; }
+
+        .chat-input-area { padding: 16px; background-color: #161f2c; border-top: 1px solid #222f43; display: flex; gap: 10px; }
+        .chat-input-area input { flex: 1; background-color: #0b1017; border: 1px solid #334155; padding: 12px 18px; border-radius: 24px; color: white; outline: none; font-size: 14px; }
+        .chat-input-area input:focus { border-color: #34c759; }
+        .chat-input-area button { width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, #007aff, #34c759); border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 100; }
+        .modal-content { background: #16202e; border: 1px solid #334155; padding: 24px; border-radius: 12px; max-width: 420px; width: 90%; position: relative; color: white; }
+        .modal-close { position: absolute; right: 16px; top: 12px; font-size: 24px; cursor: pointer; color: #94a3b8; }
+
+        @media (max-width: 768px) {
+            .map-section { position: fixed; top: 0; left: 0; width: 100% !important; height: 100%; z-index: 50; display: none; }
+            .map-section.mobile-active { display: flex; }
+            .mobile-map-close { display: block; }
+            .mobile-map-trigger-container { display: block; }
+        }
+    </style>
 </head>
 <body>
     <div class="app-container">
-        <!-- SOL/ÜST PANEL: TAKTİKSEL HARİTA & ÇİZİM ARAYÜZÜ -->
+        <!-- SOL PANEL: TAKTİKSEL HARİTA VE ÇİZİM -->
         <div class="map-section" id="mapSection">
-            <!-- ÜST BAR: MAP SEÇİMİ -->
             <div class="map-header">
                 <div class="brand-title">
-                    <i class="fa-solid fa-crosshairs logo-icon"></i>
+                    <i class="fa-solid fa-crosshairs"></i>
                     <span>KENSUW AI COACH</span>
                 </div>
                 <div class="map-selector">
@@ -27,17 +93,13 @@
                 </button>
             </div>
 
-            <!-- HARİTA & CANVAS ALANI -->
             <div class="map-display-container" id="mapDisplayContainer">
                 <div class="map-wrapper" id="mapWrapper">
-                    <img src="https://raw.githubusercontent.com/pubg/dev-assets/master/assets/maps/Erangel_Main_Low_Res.png" id="currentMapImg" alt="Tactical Map">
                     <canvas id="drawingCanvas"></canvas>
                     <div id="cityOverlay"></div>
-                    <div class="map-grid-overlay"></div>
                 </div>
             </div>
 
-            <!-- ALT BAR: KOÇLUK & ÇİZİM ARAÇLARI -->
             <div class="map-controls">
                 <div class="control-group">
                     <button class="tool-btn" id="cityInfoToggleBtn">
@@ -45,8 +107,8 @@
                     </button>
                 </div>
 
-                <div class="control-group pen-toolbar">
-                    <button class="tool-btn active-tool" id="pencilToggleBtn">
+                <div class="control-group">
+                    <button class="tool-btn" id="pencilToggleBtn">
                         <i class="fa-solid fa-pen-nib"></i> Kalem
                     </button>
                     <div class="color-palette">
@@ -60,14 +122,14 @@
                         <option value="5" selected>Orta</option>
                         <option value="10">Kalın</option>
                     </select>
-                    <button class="tool-btn-danger" id="clearCanvasBtn" title="Çizimleri Temizle">
+                    <button class="tool-btn-danger" id="clearCanvasBtn">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- SAĞ/ALT PANEL: IGL & KOÇ ANALİZ SOHBETİ -->
+        <!-- SAĞ PANEL: IGL / KOÇ ANALİZİ -->
         <div class="chat-section">
             <div class="chat-header">
                 <div class="chat-title">
@@ -79,7 +141,6 @@
                 </div>
             </div>
 
-            <!-- MOBİL İÇİN HARİTA AÇMA BUTONU -->
             <div class="mobile-map-trigger-container">
                 <button class="mobile-map-open-btn" id="mobileMapOpenBtn">
                     <i class="fa-solid fa-map-location-dot"></i> Haritayı Aç & Çizim Yap
@@ -89,7 +150,7 @@
             <div class="chat-messages" id="chatMessages">
                 <div class="message ai-message">
                     <div class="message-content">
-                        <strong>📌 [IGL & KOÇ ANALİZİ MERKEZİ]</strong>
+                        <strong>📌 [IGL & KOÇ ANALİZ MERKEZİ]</strong>
                         <p>Merhaba IGL! Takımınızın scrim maçlarındaki rotasyon hatalarını, drop/main alan split'lerini, erken fight sorunlarını veya alan içi konumlanma stratejilerini analiz etmeye hazırım. Sorunu aşağıya yazın!</p>
                     </div>
                 </div>
@@ -104,7 +165,6 @@
         </div>
     </div>
 
-    <!-- ŞEHİR / MAIN DROP BİLGİ MODALI -->
     <div class="modal" id="cityModal">
         <div class="modal-content">
             <span class="modal-close" id="modalClose">&times;</span>
