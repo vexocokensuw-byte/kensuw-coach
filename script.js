@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // DIŞ LINKLERE BAĞIMSIZ %100 YÜKLENEN PUBG TAKTİK HARİTALARI
     const maps = {
         erangel: {
             title: "ERANGEL TACTICAL MAP",
@@ -45,74 +44,77 @@ document.addEventListener("DOMContentLoaded", () => {
     let isPencilActive = true;
     let isCityActive = true;
 
-    const mapImg = document.getElementById("mapImg");
     const canvas = document.getElementById("drawCanvas");
     const ctx = canvas.getContext("2d");
     const container = document.getElementById("mapDisplayContainer");
     const cityOverlay = document.getElementById("cityOverlay");
 
+    let userStrokes = [];
+
     function resizeCanvas() {
         canvas.width = container.clientWidth || 600;
         canvas.height = container.clientHeight || 500;
-        drawVectorMap();
+        drawMapBackground();
     }
 
-    // KIRILMAZ HARİTA MOTORU
-    function drawVectorMap() {
-        if (!mapImg) return;
+    function drawMapBackground() {
         const m = maps[currentMapKey];
         const w = canvas.width;
         const h = canvas.height;
 
-        // Geçici tuvalde harita oluşturup img elementine basıyoruz (Dış link sıfır)
-        const tempCanvas = document.createElement("canvas");
-        tempCanvas.width = 800;
-        tempCanvas.height = 600;
-        const tCtx = tempCanvas.getContext("2d");
+        ctx.fillStyle = m.waterColor;
+        ctx.fillRect(0, 0, w, h);
 
-        // Deniz
-        tCtx.fillStyle = m.waterColor;
-        tCtx.fillRect(0, 0, 800, 600);
-
-        // Kara parçaları
-        tCtx.fillStyle = m.bgColor;
-        tCtx.fillRect(80, 50, 640, 380);
+        ctx.fillStyle = m.bgColor;
+        ctx.fillRect(w * 0.1, h * 0.08, w * 0.8, h * 0.65);
 
         if (currentMapKey === "erangel") {
-            tCtx.fillStyle = m.islandColor;
-            tCtx.fillRect(200, 450, 400, 100);
-            tCtx.fillStyle = "#555";
-            tCtx.fillRect(320, 420, 20, 40);
-            tCtx.fillRect(460, 420, 20, 40);
+            ctx.fillStyle = m.islandColor;
+            ctx.fillRect(w * 0.25, h * 0.76, w * 0.5, h * 0.18);
+            ctx.fillStyle = "#555";
+            ctx.fillRect(w * 0.4, h * 0.73, w * 0.03, h * 0.03);
+            ctx.fillRect(w * 0.57, h * 0.73, w * 0.03, h * 0.03);
         }
 
-        // Grid çizgileri
-        tCtx.strokeStyle = "rgba(255,255,255,0.15)";
-        tCtx.lineWidth = 1;
-        for (let x = 0; x < 800; x += 100) {
-            tCtx.beginPath(); tCtx.moveTo(x, 0); tCtx.lineTo(x, 600); tCtx.stroke();
+        ctx.strokeStyle = "rgba(255,255,255,0.12)";
+        ctx.lineWidth = 1;
+        for (let x = 0; x < w; x += w / 8) {
+            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
         }
-        for (let y = 0; y < 600; y += 100) {
-            tCtx.beginPath(); tCtx.moveTo(0, y); tCtx.lineTo(800, y); tCtx.stroke();
+        for (let y = 0; y < h; y += h / 8) {
+            ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
         }
 
-        // Başlık
-        tCtx.fillStyle = "rgba(255,255,255,0.6)";
-        tCtx.font = "bold 18px sans-serif";
-        tCtx.fillText(m.title + " (MILITARY GRID)", 20, 35);
+        ctx.fillStyle = "rgba(255,255,255,0.5)";
+        ctx.font = "bold 16px sans-serif";
+        ctx.fillText(m.title + " (MILITARY GRID)", 20, 30);
 
-        mapImg.src = tempCanvas.toDataURL();
+        redrawStrokes();
         renderCities();
+    }
+
+    function redrawStrokes() {
+        userStrokes.forEach(s => {
+            if (s.points.length < 2) return;
+            ctx.beginPath();
+            ctx.strokeStyle = s.color;
+            ctx.lineWidth = s.width;
+            ctx.lineCap = "round";
+            ctx.moveTo(s.points[0].x, s.points[0].y);
+            for (let i = 1; i < s.points.length; i++) {
+                ctx.lineTo(s.points[i].x, s.points[i].y);
+            }
+            ctx.stroke();
+        });
     }
 
     setTimeout(resizeCanvas, 100);
     window.addEventListener("resize", resizeCanvas);
 
-    // HARİTA DEĞİŞTİRME
     function switchMap(key) {
         currentMapKey = key;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        drawVectorMap();
+        userStrokes = [];
+        drawMapBackground();
     }
 
     function renderCities() {
@@ -136,7 +138,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // BUTONLAR
     document.getElementById("btnErangel").onclick = (e) => { setActiveBtn(e.target); switchMap("erangel"); };
     document.getElementById("btnMiramar").onclick = (e) => { setActiveBtn(e.target); switchMap("miramar"); };
     document.getElementById("btnRondo").onclick = (e) => { setActiveBtn(e.target); switchMap("rondo"); };
@@ -146,8 +147,8 @@ document.addEventListener("DOMContentLoaded", () => {
         target.classList.add("active");
     }
 
-    // ÇİZİM KODLARI
     let isDrawing = false;
+    let currentStroke = null;
 
     function getPos(e) {
         const rect = canvas.getBoundingClientRect();
@@ -160,18 +161,15 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!isPencilActive) return;
         isDrawing = true;
         const p = getPos(e);
-        ctx.beginPath();
-        ctx.moveTo(p.x, p.y);
+        currentStroke = { color: currentColor, width: currentLineWidth, points: [p] };
+        userStrokes.push(currentStroke);
     }
 
     function moveDraw(e) {
         if (!isDrawing || !isPencilActive) return;
         const p = getPos(e);
-        ctx.lineTo(p.x, p.y);
-        ctx.strokeStyle = currentColor;
-        ctx.lineWidth = currentLineWidth;
-        ctx.lineCap = "round";
-        ctx.stroke();
+        currentStroke.points.push(p);
+        drawMapBackground();
     }
 
     function stopDraw() { isDrawing = false; }
@@ -184,7 +182,6 @@ document.addEventListener("DOMContentLoaded", () => {
     canvas.addEventListener("touchmove", (e) => { moveDraw(e); e.preventDefault(); });
     canvas.addEventListener("touchend", stopDraw);
 
-    // KALEM/RENK/TEMİZLİK
     document.querySelectorAll(".color-picker").forEach(p => {
         p.onclick = (e) => {
             document.querySelectorAll(".color-picker").forEach(x => x.classList.remove("active"));
@@ -194,7 +191,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.getElementById("penThickness").onchange = (e) => { currentLineWidth = e.target.value; };
-    document.getElementById("clearCanvasBtn").onclick = () => { ctx.clearRect(0, 0, canvas.width, canvas.height); };
+    document.getElementById("clearCanvasBtn").onclick = () => { userStrokes = []; drawMapBackground(); };
     
     document.getElementById("pencilToggleBtn").onclick = (e) => {
         isPencilActive = !isPencilActive;
@@ -212,7 +209,6 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("cityModal").style.display = "none";
     };
 
-    // MOBİL
     document.getElementById("mobileMapOpenBtn").onclick = () => {
         document.getElementById("mapSection").classList.add("mobile-active");
         setTimeout(resizeCanvas, 100);
@@ -221,7 +217,6 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("mapSection").classList.remove("mobile-active");
     };
 
-    // CHAT
     const userInput = document.getElementById("userInput");
     const sendBtn = document.getElementById("sendBtn");
     const chatMessages = document.getElementById("chatMessages");
