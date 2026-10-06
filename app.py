@@ -6,7 +6,7 @@ app = Flask(__name__, template_folder='.', static_folder='.')
 
 API_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
 
-# İnsansı Sohbet + Üst Düzey E-Spor Koçu Modu
+# İnsansı Sohbet + Derin E-Spor Koçu Modu
 SYSTEM_PROMPT = """
 Sen "KENSUW AI COACH" adında PUBG Mobile e-spor dünyasının en deneyimli IGL'i (In-Game Leader), Taktik Direktörü ve Analistisin.
 
@@ -38,8 +38,8 @@ def chat():
         if not API_KEY:
             return jsonify({'response': '🚨 **API Key Eksik:** Render panelinde `GEMINI_API_KEY` tanımlı değil.'})
 
-        # Doğrudan Google Gemini REST API
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={API_KEY}"
+        # Güncel Gemini 2.0 Flash REST API Adresi
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={API_KEY}"
         
         payload = {
             "system_instruction": {
@@ -52,7 +52,7 @@ def chat():
                 }
             ],
             "generationConfig": {
-                "temperature": 0.95,  # Yüksek insansı esneklik ve doğallık
+                "temperature": 0.95,
                 "topP": 0.95
             }
         }
@@ -67,18 +67,6 @@ def chat():
             except (KeyError, IndexError):
                 return jsonify({'response': f"🚨 **API Yanıtı Okunamadı:** {res_data}"})
         else:
-            # Yedek Model Denemesi (gemini-2.0-flash)
-            url_v2 = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={API_KEY}"
-            res_v2 = requests.post(url_v2, json=payload, timeout=15)
-            res_v2_data = res_v2.json()
-            
-            if res_v2.status_code == 200:
-                try:
-                    ai_text = res_v2_data['candidates'][0]['content']['parts'][0]['text']
-                    return jsonify({'response': ai_text})
-                except (KeyError, IndexError):
-                    pass
-
             error_msg = res_data.get('error', {}).get('message', 'Bilinmeyen Hata')
             return jsonify({'response': f"🚨 **Google API Hatası ({response.status_code}):** {error_msg}"})
 
