@@ -1,8 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // GERÇEK PUBG MOBILE HARİTA GÖRSELLERİ VE ŞEHİR KOORDİNATLARI
+    // DOĞRUDAN VE KESİNTİSİZ PUBG MOBILE HARİTA GÖRSELLERİ
     const maps = {
         erangel: {
-            img: "https://raw.githubusercontent.com/pubg/dev-assets/master/assets/maps/Erangel_Main_Low_Res.png",
+            img: "https://i.imgur.com/8N6Oq2z.jpeg",
             cities: [
                 { name: "Pochinki", x: "47%", y: "49%", info: "Pochinki: Haritanın merkezinde yüksek loot ve çatışma bölgesi." },
                 { name: "School", x: "53%", y: "42%", info: "School: Hızlı aksiyon arayan oyuncuların ilk tercihi." },
@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ]
         },
         miramar: {
-            img: "https://raw.githubusercontent.com/pubg/dev-assets/master/assets/maps/Miramar_Main_Low_Res.png",
+            img: "https://i.imgur.com/O61qK2X.jpeg",
             cities: [
                 { name: "Pecado", x: "48%", y: "54%", info: "Pecado: Casino ve Arena binalarıyla Miramar'ın kalbi." },
                 { name: "Hacienda del Patron", x: "60%", y: "39%", info: "Hacienda: Çok dar alanda yüksek riskli lüks villa alanı." },
@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ]
         },
         rondo: {
-            img: "https://images.squarespace-cdn.com/content/v1/59af2189c59cae121262d511/1701889812423-H86V1Y3W4O20D54X9O5O/Rondo_Map.jpg",
+            img: "https://i.imgur.com/k4dG5qY.jpeg",
             cities: [
                 { name: "Jadam City", x: "52%", y: "58%", info: "Jadam City: Yüksek binalar ve dikey çatışmalar içeren dev metropol." },
                 { name: "NEOX Factory", x: "70%", y: "35%", info: "NEOX Factory: Yeni araç test pisti ve fabrika binaları." },
