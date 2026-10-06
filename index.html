@@ -3,109 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KENSUW AI COACH</title>
+    <title>KENSUW AI COACH - PUBG Mobile IGL & Taktik Koçu</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="app-container" id="appContainer">
-        <!-- SOL PANEL: HARİTA VE ARAÇLAR -->
+    <div class="app-container">
+        <!-- SOL/ÜST PANEL: TAKTİKSEL HARİTA & ÇİZİM ARAYÜZÜ -->
         <div class="map-section" id="mapSection">
-            <!-- ÜST BAR: MAP SEÇİMİ VE MOBİL KAPATMA -->
+            <!-- ÜST BAR: MAP SEÇİMİ -->
             <div class="map-header">
+                <div class="brand-title">
+                    <i class="fa-solid fa-crosshairs logo-icon"></i>
+                    <span>KENSUW AI COACH</span>
+                </div>
                 <div class="map-selector">
                     <button class="map-btn active" data-map="erangel">Erangel</button>
                     <button class="map-btn" data-map="miramar">Miramar</button>
                     <button class="map-btn" data-map="rondo">Rondo</button>
                 </div>
-                <button class="mobile-map-close" id="mobileMapCloseBtn" title="Haritayı Kapat">
+                <button class="mobile-map-close" id="mobileMapCloseBtn">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
 
-            <!-- HARİTA GÖRÜNTÜSÜ VE CANVAS -->
+            <!-- HARİTA & CANVAS ALANI -->
             <div class="map-display-container" id="mapDisplayContainer">
                 <div class="map-wrapper" id="mapWrapper">
-                    <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=1000&auto=format&fit=crop" id="currentMapImg" alt="PUBG Haritası">
+                    <img src="https://raw.githubusercontent.com/pubg/dev-assets/master/assets/maps/Erangel_Main_Low_Res.png" id="currentMapImg" alt="Tactical Map">
                     <canvas id="drawingCanvas"></canvas>
-                    <!-- Şehir Noktaları Overlay -->
                     <div id="cityOverlay"></div>
+                    <div class="map-grid-overlay"></div>
                 </div>
             </div>
 
-            <!-- ALT BAR: ŞEHİR BİLGİ VE KALEM ARAÇLARI -->
+            <!-- ALT BAR: KOÇLUK & ÇİZİM ARAÇLARI -->
             <div class="map-controls">
                 <div class="control-group">
-                    <button class="tool-btn toggle-btn" id="cityInfoToggleBtn">
-                        <i class="fa-solid fa-city"></i> Şehir Bilgi
-                        <span class="status-badge" id="cityBadge">Kapat</span>
+                    <button class="tool-btn" id="cityInfoToggleBtn">
+                        <i class="fa-solid fa-map-pin"></i> Şehir Bilgi
                     </button>
                 </div>
 
-                <div class="control-group">
-                    <button class="tool-btn toggle-btn" id="pencilToggleBtn">
-                        <i class="fa-solid fa-pen"></i> Kalem
-                        <span class="status-badge" id="pencilBadge">Kapat</span>
+                <div class="control-group pen-toolbar">
+                    <button class="tool-btn active-tool" id="pencilToggleBtn">
+                        <i class="fa-solid fa-pen-nib"></i> Kalem
                     </button>
-                    <div class="pen-settings" id="penSettings">
-                        <span class="color-picker red active" data-color="#ff3b30"></span>
-                        <span class="color-picker green" data-color="#34c759"></span>
-                        <span class="color-picker blue" data-color="#007aff"></span>
-                        <select id="penThickness">
-                            <option value="2">İnce</option>
-                            <option value="5" selected>Orta</option>
-                            <option value="9">Kalın</option>
-                        </select>
-                        <button class="tool-btn-sm" id="clearCanvasBtn" title="Çizimleri Temizle">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
+                    <div class="color-palette">
+                        <span class="color-picker active" data-color="#34c759" style="background: #34c759;"></span>
+                        <span class="color-picker" data-color="#007aff" style="background: #007aff;"></span>
+                        <span class="color-picker" data-color="#ff3b30" style="background: #ff3b30;"></span>
+                        <span class="color-picker" data-color="#ffcc00" style="background: #ffcc00;"></span>
                     </div>
+                    <select id="penThickness" class="thickness-select">
+                        <option value="2">İnce</option>
+                        <option value="5" selected>Orta</option>
+                        <option value="10">Kalın</option>
+                    </select>
+                    <button class="tool-btn-danger" id="clearCanvasBtn" title="Çizimleri Temizle">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
                 </div>
             </div>
-
-            <!-- PANELS ARASI GENİŞLETME / DARALTMA BUTONU (MASAÜSTÜ) -->
-            <button class="resize-handle" id="resizeHandle" title="Paneli Genişlet/Daralt">
-                <i class="fa-solid fa-arrows-left-right" id="resizeIcon"></i>
-            </button>
         </div>
 
-        <!-- SAĞ PANEL: YAZI / CEVAP / CHAT AREA -->
+        <!-- SAĞ/ALT PANEL: IGL & KOÇ ANALİZ SOHBETİ -->
         <div class="chat-section">
             <div class="chat-header">
-                <h2>KENSUW AI COACH</h2>
-                <p>PUBG Mobile Analiz & Yapay Zeka Koçu</p>
+                <div class="chat-title">
+                    <i class="fa-solid fa-robot"></i>
+                    <div>
+                        <h2>KENSUW AI COACH</h2>
+                        <span class="sub-status">PUBG Mobile IGL & Taktik Koçu</span>
+                    </div>
+                </div>
             </div>
 
             <!-- MOBİL İÇİN HARİTA AÇMA BUTONU -->
             <div class="mobile-map-trigger-container">
                 <button class="mobile-map-open-btn" id="mobileMapOpenBtn">
-                    <i class="fa-solid fa-map-location-dot"></i> Harita Aç
+                    <i class="fa-solid fa-map-location-dot"></i> Haritayı Aç & Çizim Yap
                 </button>
             </div>
 
             <div class="chat-messages" id="chatMessages">
                 <div class="message ai-message">
                     <div class="message-content">
-                        <strong>Cevap Başlığı</strong>
-                        <p>Merhaba! Ben KENSUW AI Coach. Haritadan bir bölge seçebilir, çizim araçlarıyla strateji belirleyebilir veya aklına takılan PUBG Mobile sorularını bana sorabilirsin!</p>
+                        <strong>📌 [IGL & KOÇ ANALİZİ MERKEZİ]</strong>
+                        <p>Merhaba IGL! Takımınızın scrim maçlarındaki rotasyon hatalarını, drop/main alan split'lerini, erken fight sorunlarını veya alan içi konumlanma stratejilerini analiz etmeye hazırım. Sorunu aşağıya yazın!</p>
                     </div>
                 </div>
             </div>
 
             <div class="chat-input-area">
-                <input type="text" id="userInput" placeholder="Soru Sorma Kutucuğu..." autocomplete="off">
-                <button id="sendBtn" title="Gönder">
+                <input type="text" id="userInput" placeholder="Soru veya scrim hatası yazın..." autocomplete="off">
+                <button id="sendBtn">
                     <i class="fa-solid fa-paper-plane"></i>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- ŞEHİR BİLGİ MODALI -->
+    <!-- ŞEHİR / MAIN DROP BİLGİ MODALI -->
     <div class="modal" id="cityModal">
         <div class="modal-content">
             <span class="modal-close" id="modalClose">&times;</span>
-            <h3 id="modalTitle">Şehir Detayı</h3>
+            <h3 id="modalTitle">Bölge Stratejisi</h3>
             <p id="modalDescription">Yükleniyor...</p>
         </div>
     </div>
