@@ -23,7 +23,7 @@
         .message { display: flex; width: 100%; }
         .ai-message { align-self: flex-start; }
         .user-message { align-self: flex-end; justify-content: flex-end; }
-        .message-content { padding: 16px 20px; border-radius: 12px; font-size: 15px; line-height: 1.6; max-width: 80%; }
+        .message-content { padding: 16px 20px; border-radius: 12px; font-size: 15px; line-height: 1.6; max-width: 85%; }
         
         .ai-message .message-content { background-color: #121212; border: 1px solid #262626; color: #e5e5e5; border-top-left-radius: 2px; }
         .user-message .message-content { background-color: #ffffff; color: #000000; font-weight: 600; border-top-right-radius: 2px; }
@@ -70,7 +70,7 @@
         </div>
 
         <div class="quick-prompts">
-            <button class="prompt-btn" onclick="sendQuickPrompt('Erangel Pochinki main drop için en iyi split taktiği nedir?')">📍 Pochinki Split</button>
+            <button class="prompt-btn" onclick="sendQuickPrompt('Erangel haritasında nasıl main belirlemeliyiz?')">📍 Main Alan Belirleme</button>
             <button class="prompt-btn" onclick="sendQuickPrompt('Phase 3 köprü geçişinde pusuya düşmemek için ne yapmalıyız?')">🚗 Köprü Geçişi</button>
             <button class="prompt-btn" onclick="sendQuickPrompt('Miramar Pecado erken fight kayıplarını önlemek için IGL komutu nasıl olmalı?')">🏜 Pecado Early Fight</button>
             <button class="prompt-btn" onclick="sendQuickPrompt('Alan daralırken araç koruması ve kompozisyon kurma stratejisi ver.')">🛡️ Araç Koruma</button>
@@ -85,7 +85,7 @@
     </div>
 
     <script>
-        function handleSend() {
+        async function handleSend() {
             const userInput = document.getElementById("userInput");
             const text = userInput.value.trim();
             if (!text) return;
@@ -93,10 +93,23 @@
             addMessage(text, "user");
             userInput.value = "";
 
-            setTimeout(() => {
-                const aiResponse = generateCoachResponse(text);
-                addMessage(aiResponse, "ai");
-            }, 400);
+            // Bekleme mesajı
+            const loadingId = addLoadingMessage();
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text })
+                });
+
+                const data = await response.json();
+                removeLoadingMessage(loadingId);
+                addMessage(data.response, "ai");
+            } catch (err) {
+                removeLoadingMessage(loadingId);
+                addMessage("🚨 KENSUW Coach: Sunucuya bağlanırken bir hata oluştu.", "ai");
+            }
         }
 
         function addMessage(text, sender) {
@@ -104,11 +117,33 @@
             const msgDiv = document.createElement("div");
             msgDiv.className = `message ${sender === 'user' ? 'user-message' : 'ai-message'}`;
             
-            const formattedText = text.replace(/\n/g, "<br>");
-            msgDiv.innerHTML = `<div class="message-content">${sender === 'ai' ? '<strong>KENSUW COACH:</strong><br><br>' : ''}${formattedText}</div>`;
+            // Formatlama (Markdown tarzı yıldızları ve alt satırları düzelt)
+            let formatted = text
+                .replace(/\n/g, "<br>")
+                .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+                .replace(/\*(.*?)\*/g, "<em>$1</em>");
+
+            msgDiv.innerHTML = `<div class="message-content">${sender === 'ai' ? '<strong>KENSUW COACH:</strong><br><br>' : ''}${formatted}</div>`;
             
             chatMessages.appendChild(msgDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function addLoadingMessage() {
+            const chatMessages = document.getElementById("chatMessages");
+            const msgDiv = document.createElement("div");
+            const id = "loading-" + Date.now();
+            msgDiv.id = id;
+            msgDiv.className = "message ai-message";
+            msgDiv.innerHTML = `<div class="message-content"><em>KENSUW Coach analiz ediyor...</em></div>`;
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return id;
+        }
+
+        function removeLoadingMessage(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
         }
 
         function sendQuickPrompt(promptText) {
@@ -122,19 +157,6 @@
                 handleSend();
             }
         });
-
-        function generateCoachResponse(query) {
-            const q = query.toLowerCase();
-            if (q.includes("pochinki")) {
-                return "📌 **POCHINKI SPLIT TAKTİĞİ:**\n1. **2-2 Split Düzeni:** Takımın iki oyuncusu Kilise bölgesini (yüksek nokta görüşü için), diğer iki oyuncusu Mavi Evler tarafını tutmalı.\n2. **Rotasyon:** İlk çember kapandığında Kilise grubu görüş açısı verip araçları toplarken, Mavi Evler grubu ana yoldan batıya doğru açılmalıdır.";
-            } else if (q.includes("köprü") || q.includes("kopru")) {
-                return "🚗 **KÖPRÜ GEÇİŞ STRATEJİSİ:**\n1. **Scout (Öncü) Atama:** Köprüye asla 4 kişi birden girmeyin. Bir kişi hızlı motor/buggy ile pusu kontrolü yapmalıdır.\n2. **Bot Geçişi:** Köprü tutulmuşsa vakit kaybetmeden deniz kenarından tekne/bot arayışına geçilmeli ya da doğu kanadındaki sudan yüzme hatları kullanılmalıdır.";
-            } else if (q.includes("pecado")) {
-                return "🏜️ **PECADO EARLY FIGHT KURALI:**\n1. **Casino & Arena İzolasyonu:** Asla aynı anda hem Casino hem Arena'ya bölünmeyin. Tüm takım Casino merkezli düşüp çatı alanını kapatmalıdır.\n2. **IGL Komutu:** İlk silah alındığı an bireysel fight yerine doğrudan çatı üstünden 4'lü baskı kurulmalıdır.";
-            } else {
-                return "📌 **IGL & KOÇ DERSİ:**\n\n1. **Araç Koruma:** Maç ortasına 4 araçla girmek alan içi siper ve hayatta kalma şansınızı %60 artırır.\n2. **Alan İçi Disiplin:** Çember kapanırken gereksiz skor arayışına girmeyin, puan odaklı alan merkezine sızın.\n3. **Komuta Zinciri:** Çatışma anında IGL tek bir hedef gösterdiği an tüm takım aynı hedefe odaklanmalıdır.";
-            }
-        }
     </script>
 </body>
 </html>
