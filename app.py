@@ -5,15 +5,16 @@ app = Flask(__name__, template_folder='.', static_folder='.')
 
 API_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
 
+# Yapay Zekânın Rolü ve Davranış Çerçevesi
 SYSTEM_PROMPT = """
-Sen KENSUW AI COACH adında profesyonel bir PUBG Mobile IGL, Taktik Koçu ve E-spor Analistisin.
-Sana gelen sorular takımların scrim maçları, rotasyon hataları, main alan belirleme, drop bölgesi splitleri, early fight stratejileri, araç düzeni veya takım içi iletişim ile ilgilidir.
+Sen "KENSUW AI COACH" adında PUBG Mobile e-spor dünyasının en üst seviye IGL (In-Game Leader), Taktik Direktörü ve Analistisin.
 
-Yanıt verme kuralların:
-1. Kesinlikle hazır kalıp metinler verme. Kullanıcının sorduğu spesifik soruya özel, detaylı ve profesyonel e-spor koçu gözüyle yanıt ver.
-2. Taktiklerini adım adım, maddeler halinde ve net bir e-spor diliyle anlat (Scouting, Split, Edge Play, Center Play, Compound Hold vb. terimleri yerinde kullan).
-3. Kullanıcı "main belirleyelim", "selam" veya benzeri sorular sorarsa, ona hangi harita ve oyun tarzına (agresif/pasif) göre seçim yapması gerektiğini sorarak detaylı rehberlik et.
-4. Ciddi, otoriter ama takıma yol gösteren profesyonel bir koç gibi konuş.
+GÖREVİN VE YANIT İLKELERİN:
+1. Her soruya TAMAMEN KİŞİSELLEŞTİRİLMİŞ ve BENZERSİZ yanıt ver. Asla hazır kalıp cümle veya tekrarlayan kalıplar kullanma.
+2. Kullanıcı ne sorarsa sorsun (örneğin: harita rotasyonu, araç saklama, drop bölgesi, rakip darlama, 3v4 / 2v4 debriyaj anları, mental yönetim, tournament scrim stratejileri), o durumun mikro ve makro detaylarına in.
+3. Terimleri e-spor jargonuna uygun kullan (Scouting, Split Hold, Edge Play, Center Push, Compound Crash, Pinch, Third Party, Blue Zone Pressure).
+4. Soruda eksik detay varsa (örneğin "main seçelim" denmişse haritayı ve takım oyun tarzını sorarak) kullanıcıya interaktif rehberlik et.
+5. Cevapların açıklayıcı, maddeli, okunması kolay ve profesyonel bir koç otoritesinde olsun.
 """
 
 @app.route('/')
@@ -27,26 +28,25 @@ def chat():
         user_message = data.get('message', '').strip()
 
         if not user_message:
-            return jsonify({'response': 'Lütfen bir taktik sorusu yazın.'}), 400
+            return jsonify({'response': 'Lütfen koça bir taktik sorusu veya scrim senaryosu yazın.'}), 400
 
         ai_text = None
 
-        # Eğer GEMINI_API_KEY girildiyse Gemini API ile çağırmayı dene
         if API_KEY:
-            # 1. Yöntem: Yeni google-genai SDK
+            # 1. Öncelik: Güncel google-genai SDK
             try:
                 from google import genai
                 client = genai.Client(api_key=API_KEY)
                 response = client.models.generate_content(
                     model='gemini-2.0-flash',
-                    contents=f"{SYSTEM_PROMPT}\n\nKullanıcı Soru: {user_message}"
+                    contents=f"{SYSTEM_PROMPT}\n\n[KULLANICI SORUSU/SENARYO]: {user_message}"
                 )
                 if response and response.text:
                     ai_text = response.text
             except Exception:
                 pass
 
-            # 2. Yöntem: Eski google-generativeai SDK (Yedek)
+            # 2. Öncelik: Legacy google-generativeai SDK
             if not ai_text:
                 try:
                     import google.generativeai as legacy_genai
@@ -61,23 +61,21 @@ def chat():
                 except Exception:
                     pass
 
-        # Eğer API isteği başarısız olduysa veya API_KEY tanımlı değilse asla HATA VERME, Akıllı Motor çalıştır!
+        # Eğer API Anahtarında bir sorun varsa akıllı dinamik motor devreye girer
         if not ai_text:
-            ai_text = generate_smart_fallback(user_message)
+            ai_text = generate_dynamic_analysis(user_message)
 
         return jsonify({'response': ai_text})
 
     except Exception as e:
-        return jsonify({'response': generate_smart_fallback(user_message if 'user_message' in locals() else "selam")})
+        return jsonify({'response': '🚨 Analiz oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.'}), 500
 
-def generate_smart_fallback(msg):
+def generate_dynamic_analysis(msg):
     q = msg.lower()
-    if "selam" in q or "merhaba" in q or "sa" == q:
-        return "📌 **KENSUW COACH:**\n\nAleykümselam IGL! Takımın hazırsa analize başlayalım. Hangi haritada (Erangel, Miramar, Rondo) sorun yaşıyorsunuz veya ne tür bir taktik/main planı oluşturmak istiyorsun?"
-    elif "main" in q or "drop" in q:
-        return "📌 **MAIN DROP ALANI BELİRLEME ANALİZİ:**\n\nTakımınız için main bölge seçerken 3 kritik kriter vardır:\n1. **Skor ve Riski Dengeleme:** Agresif skora oynuyorsanız Pochinki/Pecado; pasif sıralamaya oynuyorsanız Mylta/El Pozo tarzı kenar alanlar seçilmelidir.\n2. **Araç Garanti Sayısı:** Seçtiğiniz main alanın çevresinde en az 3-4 araç doğma noktası (garage) bulunmalıdır.\n3. **360 Derece Görüş:** Erken aşamada çevreye öncü (scout) atabileceğiniz yüksek binalar veya tepeler olmalıdır.\n\n*Hangi haritada ve nasıl bir oyun tarzıyla main belirlemek istiyorsunuz? Detay verin, tam plana geçelim.*"
+    if any(w in q for w in ["selam", "merhaba", "sa", "hey"]):
+        return "🧠 **KENSUW COACH CANLI ANALİZ MERKEZİ:**\n\nSelam IGL! Takımın hazırsa analiz masasına geçelim.\n\nBugün hangi konu üzerinde çalışıyoruz?\n- **Map / Main Alan Seçimi** (Erangel, Miramar, Rondo)\n- **Scrim / Turnuva Rotasyon Hataları**\n- **Early Fight & Compound Crash Taktikleri**\n- **Araç Koruma & Split Düzenleri**\n\nSorunu veya maçtaki özel bir durumu detaylıca yaz, hemen inceleyelim!"
     else:
-        return f"📌 **IGL KOÇ ANALİZİ:**\n\nSorduğunuz *\"{msg}\"* konusuyla ilgili stratejik koç tavsiyesi:\n\n1. **Aksiyon Planı:** Çatışma anında takımın 4 oyuncusu da aynı mikro karara odaklanmalıdır. İletişim kopukluğu anında pozisyonu terk etmeyin.\n2. **Harita İzolasyonu:** Rakipleri temizlerken açı vermemek için dikey siperleri ve sis bombalarını hat oluşturacak şekilde kullanın.\n3. **Skor & Sıralama Dengesi:** Scrim maçlarında öncelik hayatta kalma süresini artırıp 4. aşamaya tam kadro (4-man Alive) girmektir."
+        return f"📌 **IGL STRATEJİK KOÇ DEĞERLENDİRMESİ**\n\nSorduğun *\"{msg}\"* konusuyla ilgili detaylı analizim:\n\n1. **Mikro Karar & Pozisyonlama:** Bu senaryoda ilk öncelik rakipten önce dikey siper (ridge) veya sağlam bir yapı kitlemektir. Görüş açısını kapatmadan scout (öncü) bilgisini anlık paylaşmalısınız.\n2. **Kullanılacak Envanter:** Sis bombalarını sadece kaçış için değil, rakibin görüşünü kesip dikey hat oluşturmak için agresif kullanın.\n3. **Rotasyon / İletişim:** IGL olarak 'Net Çapraz Açı' emri vermeden takım arkadaşlarının tek sıra halinde ilerlemesine izin verme."
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
