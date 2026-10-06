@@ -1,31 +1,37 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // DOĞRUDAN VE KESİNTİSİZ PUBG MOBILE HARİTA GÖRSELLERİ
+    // KESİNTİSİZ ASKERİ IZGARA (GRID) & ANALİZ HARİTALARI
     const maps = {
         erangel: {
-            img: "https://i.imgur.com/8N6Oq2z.jpeg",
+            bg: "radial-gradient(circle, #1a331a 0%, #0d1a0d 100%)",
+            grid: "#336633",
+            name: "ERANGEL TACTICAL MAP",
             cities: [
-                { name: "Pochinki", x: "47%", y: "49%", info: "Pochinki: Haritanın merkezinde yüksek loot ve çatışma bölgesi." },
-                { name: "School", x: "53%", y: "42%", info: "School: Hızlı aksiyon arayan oyuncuların ilk tercihi." },
-                { name: "Military Base", x: "60%", y: "82%", info: "Sosnovka Military Base: Üst düzey zırh ve silahların çıktığı ada bölgesi." },
-                { name: "Georgopol", x: "25%", y: "30%", info: "Georgopol: Konteynerler ve liman bölgesiyle zengin harita alanı." },
-                { name: "Mylta Power", x: "85%", y: "58%", info: "Mylta Power: Haritanın doğusundaki yüksek Seviye 3 kask/zırh alanı." }
+                { name: "Pochinki (Main)", x: "48%", y: "50%", info: "Pochinki: Merkezi drop ve ana rotasyon kavşağı. Çevre binalarla Split Drop yapın." },
+                { name: "School", x: "55%", y: "42%", info: "School: Erken fight ve 3rd party riskinin en yüksek olduğu merkez bölge." },
+                { name: "Military Base (Main)", x: "60%", y: "82%", info: "Sosnovka Military Base: Ada rotasyonu. Köprü kontrolü ve bot geçiş planı şart." },
+                { name: "Georgopol", x: "25%", y: "30%", info: "Georgopol: Konteyner splitleri. Batı rotasyonlarının başlangıç noktası." },
+                { name: "Mylta Power", x: "82%", y: "58%", info: "Mylta Power: Doğu kanadı güvenli drop ve erken Phase 1 çember dışı tutunma alanı." }
             ]
         },
         miramar: {
-            img: "https://i.imgur.com/O61qK2X.jpeg",
+            bg: "radial-gradient(circle, #3b2b18 0%, #1c140b 100%)",
+            grid: "#5c4326",
+            name: "MIRAMAR TACTICAL MAP",
             cities: [
-                { name: "Pecado", x: "48%", y: "54%", info: "Pecado: Casino ve Arena binalarıyla Miramar'ın kalbi." },
-                { name: "Hacienda del Patron", x: "60%", y: "39%", info: "Hacienda: Çok dar alanda yüksek riskli lüks villa alanı." },
-                { name: "El Pozo", x: "28%", y: "25%", info: "El Pozo: Haritanın kuzeybatısındaki devasa şehir bölgesi." },
-                { name: "Los Leones", x: "68%", y: "70%", info: "Los Leones: Haritanın en büyük metropol alanı." }
+                { name: "Pecado (Main)", x: "48%", y: "54%", info: "Pecado: Miramar'ın merkez rotasyon ve 'contest' noktası. Hızlı süzülme şart." },
+                { name: "Hacienda del Patron", x: "60%", y: "39%", info: "Hacienda: Çok dar alanda ani çatışma bölgesi. Duo split koruması alın." },
+                { name: "Los Leones (Main)", x: "68%", y: "70%", info: "Los Leones: Geniş şehir. 1-3 split ve çatı kontrolüyle IGL gözetleme alanı." },
+                { name: "El Pozo", x: "28%", y: "25%", info: "El Pozo: Kuzeybatı büyük drop alanı. Giriş/çıkış rotasyonlarında araç koruma şart." }
             ]
         },
         rondo: {
-            img: "https://i.imgur.com/k4dG5qY.jpeg",
+            bg: "radial-gradient(circle, #152536 0%, #0a121a 100%)",
+            grid: "#254463",
+            name: "RONDO TACTICAL MAP",
             cities: [
-                { name: "Jadam City", x: "52%", y: "58%", info: "Jadam City: Yüksek binalar ve dikey çatışmalar içeren dev metropol." },
-                { name: "NEOX Factory", x: "70%", y: "35%", info: "NEOX Factory: Yeni araç test pisti ve fabrika binaları." },
-                { name: "Yu Lin", x: "35%", y: "40%", info: "Yu Lin: Geleneksel mimari ve dar sokaklar." }
+                { name: "Jadam City (Main)", x: "52%", y: "58%", info: "Jadam City: Yüksek dikey çatışmalar. Çatı ve sokak arası split mesafesini koruyun." },
+                { name: "NEOX Factory", x: "70%", y: "35%", info: "NEOX Factory: Açık alan geçişleri çok riskli. Araçlarla hızlı rotasyon tercih edin." },
+                { name: "Yu Lin", x: "35%", y: "40%", info: "Yu Lin: Dar sokaklar ve pusu alanları. İlerlerken öncü/arkacı dağılımını bozmayın." }
             ]
         }
     };
@@ -36,51 +42,61 @@ document.addEventListener("DOMContentLoaded", () => {
     let currentColor = "#ff3b30";
     let currentLineWidth = 5;
 
-    // DOM Elementleri
-    const mapImg = document.getElementById("currentMapImg");
+    const mapDisplay = document.getElementById("mapDisplayContainer");
     const canvas = document.getElementById("drawingCanvas");
     const ctx = canvas.getContext("2d");
     const cityOverlay = document.getElementById("cityOverlay");
-    
+
     const pencilToggleBtn = document.getElementById("pencilToggleBtn");
     const pencilBadge = document.getElementById("pencilBadge");
     const penSettings = document.getElementById("penSettings");
     const cityInfoToggleBtn = document.getElementById("cityInfoToggleBtn");
     const cityBadge = document.getElementById("cityBadge");
 
-    const resizeHandle = document.getElementById("resizeHandle");
-    const mapSection = document.getElementById("mapSection");
-    const resizeIcon = document.getElementById("resizeIcon");
+    function renderTacticalMap() {
+        const m = maps[currentMapKey];
+        
+        // 1. Harita Arkaplan ve Izgara Çizimi (Grid Lines)
+        mapDisplay.style.background = m.bg;
+        
+        // Canvas Boyutlarını Ayarla
+        canvas.width = mapDisplay.clientWidth;
+        canvas.height = mapDisplay.clientHeight;
+        
+        // Harita Başlığı ve Taktiksel Izgara Ekranı
+        let overlayTitle = document.getElementById("mapOverlayTitle");
+        if (!overlayTitle) {
+            overlayTitle = document.createElement("div");
+            overlayTitle.id = "mapOverlayTitle";
+            overlayTitle.style.position = "absolute";
+            overlayTitle.style.top = "15px";
+            overlayTitle.style.left = "20px";
+            overlayTitle.style.color = "rgba(255,255,255,0.4)";
+            overlayTitle.style.fontSize = "12px";
+            overlayTitle.style.letterSpacing = "2px";
+            overlayTitle.style.pointerEvents = "none";
+            mapDisplay.appendChild(overlayTitle);
+        }
+        overlayTitle.textContent = m.name + " ( MILITARY GRID )";
 
-    const mobileMapOpenBtn = document.getElementById("mobileMapOpenBtn");
-    const mobileMapCloseBtn = document.getElementById("mobileMapCloseBtn");
-
-    // Canvas Boyutlandırma
-    function resizeCanvas() {
-        if (!mapImg) return;
-        canvas.width = mapImg.clientWidth;
-        canvas.height = mapImg.clientHeight;
+        loadCities();
     }
 
-    mapImg.onload = () => {
-        resizeCanvas();
-        loadCities();
-    };
+    renderTacticalMap();
+    window.addEventListener("resize", renderTacticalMap);
 
-    window.addEventListener("resize", resizeCanvas);
-
-    // Harita Butonları (Erangel, Miramar, Rondo)
+    // Harita Değiştirici Butonlar
     document.querySelectorAll(".map-btn").forEach(btn => {
         btn.addEventListener("click", (e) => {
             document.querySelectorAll(".map-btn").forEach(b => b.classList.remove("active"));
             e.target.classList.add("active");
             currentMapKey = e.target.dataset.map;
-            mapImg.src = maps[currentMapKey].img;
+            renderTacticalMap();
             clearCanvas();
         });
     });
 
-    // Çizim Araçları (Kalem)
+    // Kalem ve Taktik Çizim Mantığı
     let isDrawing = false;
 
     pencilToggleBtn.addEventListener("click", () => {
@@ -112,7 +128,6 @@ document.addEventListener("DOMContentLoaded", () => {
     canvas.addEventListener("mousedown", startDrawing);
     canvas.addEventListener("mousemove", draw);
     canvas.addEventListener("mouseup", stopDrawing);
-    canvas.addEventListener("mouseleave", stopDrawing);
 
     canvas.addEventListener("touchstart", (e) => { startDrawing(e.touches[0]); });
     canvas.addEventListener("touchmove", (e) => { draw(e.touches[0]); e.preventDefault(); });
@@ -136,11 +151,9 @@ document.addEventListener("DOMContentLoaded", () => {
         ctx.stroke();
     }
 
-    function stopDrawing() {
-        isDrawing = false;
-    }
+    function stopDrawing() { isDrawing = false; }
 
-    // Şehir Bilgisi Göster/Gizle
+    // Şehir / Drop Noktaları Analizi
     cityInfoToggleBtn.addEventListener("click", () => {
         isCityInfoOpen = !isCityInfoOpen;
         cityBadge.textContent = isCityInfoOpen ? "Açık" : "Kapat";
@@ -174,53 +187,56 @@ document.addEventListener("DOMContentLoaded", () => {
         modal.style.display = "flex";
     }
 
-    // Masaüstü Panel Genişletme
-    if (resizeHandle) {
-        resizeHandle.addEventListener("click", () => {
-            mapSection.classList.toggle("expanded");
-            const isExpanded = mapSection.classList.contains("expanded");
-            resizeIcon.className = isExpanded ? "fa-solid fa-arrows-left-right-to-line" : "fa-solid fa-arrows-left-right";
-            setTimeout(resizeCanvas, 300);
-        });
-    }
-
-    // Mobil Aç/Kapat Butonları
-    if (mobileMapOpenBtn) {
-        mobileMapOpenBtn.addEventListener("click", () => {
-            mapSection.classList.add("mobile-active");
-            setTimeout(resizeCanvas, 100);
-        });
-    }
-
-    if (mobileMapCloseBtn) {
-        mobileMapCloseBtn.addEventListener("click", () => {
-            mapSection.classList.remove("mobile-active");
-        });
-    }
-
-    // Chat Soru-Cevap
+    // Chat / AI Analiz (API Bağlantısı)
     const userInput = document.getElementById("userInput");
     const sendBtn = document.getElementById("sendBtn");
     const chatMessages = document.getElementById("chatMessages");
 
-    function sendMessage() {
+    async function sendMessage() {
         const text = userInput.value.trim();
         if (!text) return;
 
         addMessage(text, "user");
         userInput.value = "";
 
-        setTimeout(() => {
-            addMessage(`KENSUW AI Coach Analizi: "${text}" sorusu için seçilen harita üzerindeki taktiksel noktalar işaretlenmiştir.`, "ai");
-        }, 800);
+        // Yapay Zeka Düşünüyor Mesajı
+        const loadingId = addMessage("KENSUW Coach: Analiz ediliyor...", "ai-loading");
+
+        try {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text })
+            });
+            const data = await response.json();
+            
+            // Yükleniyor'u kaldır, cevabı ekle
+            removeMessage(loadingId);
+            addMessage(data.response, "ai");
+        } catch (err) {
+            removeMessage(loadingId);
+            addMessage("🚨 KENSUW Coach: Analiz sunucusuna erişilemedi. Lütfen bağlantınızı kontrol edin.", "ai");
+        }
     }
 
     function addMessage(text, sender) {
+        const id = "msg_" + Date.now();
         const msgDiv = document.createElement("div");
-        msgDiv.className = `message ${sender}-message`;
-        msgDiv.innerHTML = `<div class="message-content"><p>${text}</p></div>`;
+        msgDiv.id = id;
+        msgDiv.className = `message ${sender === 'user' ? 'user-message' : 'ai-message'}`;
+        
+        // Çok satırlı Markdown benzeri çıktıyı desteklemek için formatlama
+        const formattedText = text.replace(/\n/g, "<br>");
+        msgDiv.innerHTML = `<div class="message-content"><p>${formattedText}</p></div>`;
+        
         chatMessages.appendChild(msgDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
+        return id;
+    }
+
+    function removeMessage(id) {
+        const el = document.getElementById(id);
+        if (el) el.remove();
     }
 
     sendBtn.addEventListener("click", sendMessage);
