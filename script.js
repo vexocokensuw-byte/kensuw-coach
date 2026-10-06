@@ -1,10 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
     const maps = {
         erangel: {
-            title: "ERANGEL TACTICAL MAP",
-            bgColor: "#142918",
-            waterColor: "#0d1b2a",
-            islandColor: "#1b3823",
+            title: "ERANGEL TACTICAL MAP (MILITARY GRID)",
+            mainFill: "#1b3823",
+            subShow: true,
             cities: [
                 { name: "Pochinki (Main)", x: "47%", y: "49%", info: "Pochinki: Erangel merkez drop ve rotasyon kavşağı." },
                 { name: "School & Apartments", x: "53%", y: "42%", info: "School: Erken çatışma ve çatı kontrol noktası." },
@@ -14,10 +13,9 @@ document.addEventListener("DOMContentLoaded", () => {
             ]
         },
         miramar: {
-            title: "MIRAMAR TACTICAL MAP",
-            bgColor: "#3b2a18",
-            waterColor: "#0d1b2a",
-            islandColor: "#4a351e",
+            title: "MIRAMAR TACTICAL MAP (MILITARY GRID)",
+            mainFill: "#42321e",
+            subShow: false,
             cities: [
                 { name: "Pecado (Main)", x: "48%", y: "54%", info: "Pecado: Miramar kalbi. Casino ve Arena noktası." },
                 { name: "Hacienda del Patron", x: "60%", y: "39%", info: "Hacienda: Dar alanda hızlı temizleme bölgesi." },
@@ -26,10 +24,9 @@ document.addEventListener("DOMContentLoaded", () => {
             ]
         },
         rondo: {
-            title: "RONDO TACTICAL MAP",
-            bgColor: "#162536",
-            waterColor: "#081019",
-            islandColor: "#1f344d",
+            title: "RONDO TACTICAL MAP (MILITARY GRID)",
+            mainFill: "#1a2c3d",
+            subShow: false,
             cities: [
                 { name: "Jadam City (Main)", x: "52%", y: "58%", info: "Jadam City: Yüksek dikey binalar." },
                 { name: "NEOX Factory", x: "70%", y: "35%", info: "NEOX Factory: Fabrika bölgesi." },
@@ -49,80 +46,44 @@ document.addEventListener("DOMContentLoaded", () => {
     const container = document.getElementById("mapDisplayContainer");
     const cityOverlay = document.getElementById("cityOverlay");
 
-    let userStrokes = [];
-
-    function resizeCanvas() {
-        canvas.width = container.clientWidth || 600;
-        canvas.height = container.clientHeight || 500;
-        drawMapBackground();
+    function fitCanvas() {
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
     }
 
-    function drawMapBackground() {
-        const m = maps[currentMapKey];
-        const w = canvas.width;
-        const h = canvas.height;
-
-        ctx.fillStyle = m.waterColor;
-        ctx.fillRect(0, 0, w, h);
-
-        ctx.fillStyle = m.bgColor;
-        ctx.fillRect(w * 0.1, h * 0.08, w * 0.8, h * 0.65);
-
-        if (currentMapKey === "erangel") {
-            ctx.fillStyle = m.islandColor;
-            ctx.fillRect(w * 0.25, h * 0.76, w * 0.5, h * 0.18);
-            ctx.fillStyle = "#555";
-            ctx.fillRect(w * 0.4, h * 0.73, w * 0.03, h * 0.03);
-            ctx.fillRect(w * 0.57, h * 0.73, w * 0.03, h * 0.03);
-        }
-
-        ctx.strokeStyle = "rgba(255,255,255,0.12)";
-        ctx.lineWidth = 1;
-        for (let x = 0; x < w; x += w / 8) {
-            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
-        }
-        for (let y = 0; y < h; y += h / 8) {
-            ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
-        }
-
-        ctx.fillStyle = "rgba(255,255,255,0.5)";
-        ctx.font = "bold 16px sans-serif";
-        ctx.fillText(m.title + " (MILITARY GRID)", 20, 30);
-
-        redrawStrokes();
-        renderCities();
-    }
-
-    function redrawStrokes() {
-        userStrokes.forEach(s => {
-            if (s.points.length < 2) return;
-            ctx.beginPath();
-            ctx.strokeStyle = s.color;
-            ctx.lineWidth = s.width;
-            ctx.lineCap = "round";
-            ctx.moveTo(s.points[0].x, s.points[0].y);
-            for (let i = 1; i < s.points.length; i++) {
-                ctx.lineTo(s.points[i].x, s.points[i].y);
-            }
-            ctx.stroke();
-        });
-    }
-
-    setTimeout(resizeCanvas, 100);
-    window.addEventListener("resize", resizeCanvas);
+    fitCanvas();
+    window.addEventListener("resize", fitCanvas);
 
     function switchMap(key) {
         currentMapKey = key;
-        userStrokes = [];
-        drawMapBackground();
+        const m = maps[key];
+
+        document.getElementById("mainIsland").setAttribute("fill", m.mainFill);
+        document.getElementById("mapTitle").textContent = m.title;
+
+        const sub = document.getElementById("subIsland");
+        const b1 = document.getElementById("bridge1");
+        const b2 = document.getElementById("bridge2");
+
+        if (m.subShow) {
+            sub.style.display = "block";
+            b1.style.display = "block";
+            b2.style.display = "block";
+        } else {
+            sub.style.display = "none";
+            b1.style.display = "none";
+            b2.style.display = "none";
+        }
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        renderCities();
     }
 
     function renderCities() {
         cityOverlay.innerHTML = "";
         if (!isCityActive) return;
 
-        const cities = maps[currentMapKey].cities;
-        cities.forEach(c => {
+        maps[currentMapKey].cities.forEach(c => {
             const dot = document.createElement("div");
             dot.className = "city-dot";
             dot.style.left = c.x;
@@ -138,6 +99,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    renderCities();
+
     document.getElementById("btnErangel").onclick = (e) => { setActiveBtn(e.target); switchMap("erangel"); };
     document.getElementById("btnMiramar").onclick = (e) => { setActiveBtn(e.target); switchMap("miramar"); };
     document.getElementById("btnRondo").onclick = (e) => { setActiveBtn(e.target); switchMap("rondo"); };
@@ -148,7 +111,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     let isDrawing = false;
-    let currentStroke = null;
 
     function getPos(e) {
         const rect = canvas.getBoundingClientRect();
@@ -161,15 +123,18 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!isPencilActive) return;
         isDrawing = true;
         const p = getPos(e);
-        currentStroke = { color: currentColor, width: currentLineWidth, points: [p] };
-        userStrokes.push(currentStroke);
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
     }
 
     function moveDraw(e) {
         if (!isDrawing || !isPencilActive) return;
         const p = getPos(e);
-        currentStroke.points.push(p);
-        drawMapBackground();
+        ctx.lineTo(p.x, p.y);
+        ctx.strokeStyle = currentColor;
+        ctx.lineWidth = currentLineWidth;
+        ctx.lineCap = "round";
+        ctx.stroke();
     }
 
     function stopDraw() { isDrawing = false; }
@@ -191,7 +156,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.getElementById("penThickness").onchange = (e) => { currentLineWidth = e.target.value; };
-    document.getElementById("clearCanvasBtn").onclick = () => { userStrokes = []; drawMapBackground(); };
+    document.getElementById("clearCanvasBtn").onclick = () => { ctx.clearRect(0, 0, canvas.width, canvas.height); };
     
     document.getElementById("pencilToggleBtn").onclick = (e) => {
         isPencilActive = !isPencilActive;
@@ -211,7 +176,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("mobileMapOpenBtn").onclick = () => {
         document.getElementById("mapSection").classList.add("mobile-active");
-        setTimeout(resizeCanvas, 100);
+        setTimeout(fitCanvas, 100);
     };
     document.getElementById("mobileMapCloseBtn").onclick = () => {
         document.getElementById("mapSection").classList.remove("mobile-active");
