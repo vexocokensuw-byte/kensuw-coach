@@ -1,8 +1,11 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // KESİNTİSİZ HARİTA RESİM LINKLERI VE DROP NOKTALARI
+    // DIŞ LINKLERE BAĞIMSIZ %100 YÜKLENEN PUBG TAKTİK HARİTALARI
     const maps = {
         erangel: {
-            img: "https://images.squarespace-cdn.com/content/v1/59af2189c534a58e4917a228/1505322965706-L9Z8F9T6L9D14C3E2F40/Erangel_Main_Low.jpg",
+            title: "ERANGEL TACTICAL MAP",
+            bgColor: "#142918",
+            waterColor: "#0d1b2a",
+            islandColor: "#1b3823",
             cities: [
                 { name: "Pochinki (Main)", x: "47%", y: "49%", info: "Pochinki: Erangel merkez drop ve rotasyon kavşağı." },
                 { name: "School & Apartments", x: "53%", y: "42%", info: "School: Erken çatışma ve çatı kontrol noktası." },
@@ -12,7 +15,10 @@ document.addEventListener("DOMContentLoaded", () => {
             ]
         },
         miramar: {
-            img: "https://images.squarespace-cdn.com/content/v1/59af2189c534a58e4917a228/1513813958045-A6S9N2M8D9F0E1W2R3T4/Miramar_Main_Low.jpg",
+            title: "MIRAMAR TACTICAL MAP",
+            bgColor: "#3b2a18",
+            waterColor: "#0d1b2a",
+            islandColor: "#4a351e",
             cities: [
                 { name: "Pecado (Main)", x: "48%", y: "54%", info: "Pecado: Miramar kalbi. Casino ve Arena noktası." },
                 { name: "Hacienda del Patron", x: "60%", y: "39%", info: "Hacienda: Dar alanda hızlı temizleme bölgesi." },
@@ -21,7 +27,10 @@ document.addEventListener("DOMContentLoaded", () => {
             ]
         },
         rondo: {
-            img: "https://i.ibb.co/Lp2p68t/rondo-pubg.jpg",
+            title: "RONDO TACTICAL MAP",
+            bgColor: "#162536",
+            waterColor: "#081019",
+            islandColor: "#1f344d",
             cities: [
                 { name: "Jadam City (Main)", x: "52%", y: "58%", info: "Jadam City: Yüksek dikey binalar." },
                 { name: "NEOX Factory", x: "70%", y: "35%", info: "NEOX Factory: Fabrika bölgesi." },
@@ -45,22 +54,67 @@ document.addEventListener("DOMContentLoaded", () => {
     function resizeCanvas() {
         canvas.width = container.clientWidth || 600;
         canvas.height = container.clientHeight || 500;
+        drawVectorMap();
     }
 
-    resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
+    // KIRILMAZ HARİTA MOTORU
+    function drawVectorMap() {
+        if (!mapImg) return;
+        const m = maps[currentMapKey];
+        const w = canvas.width;
+        const h = canvas.height;
 
-    // HARİTA DEĞİŞTİRME MANTIĞI
-    function switchMap(key) {
-        currentMapKey = key;
-        const m = maps[key];
-        
-        mapImg.src = m.img;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // Geçici tuvalde harita oluşturup img elementine basıyoruz (Dış link sıfır)
+        const tempCanvas = document.createElement("canvas");
+        tempCanvas.width = 800;
+        tempCanvas.height = 600;
+        const tCtx = tempCanvas.getContext("2d");
+
+        // Deniz
+        tCtx.fillStyle = m.waterColor;
+        tCtx.fillRect(0, 0, 800, 600);
+
+        // Kara parçaları
+        tCtx.fillStyle = m.bgColor;
+        tCtx.fillRect(80, 50, 640, 380);
+
+        if (currentMapKey === "erangel") {
+            tCtx.fillStyle = m.islandColor;
+            tCtx.fillRect(200, 450, 400, 100);
+            tCtx.fillStyle = "#555";
+            tCtx.fillRect(320, 420, 20, 40);
+            tCtx.fillRect(460, 420, 20, 40);
+        }
+
+        // Grid çizgileri
+        tCtx.strokeStyle = "rgba(255,255,255,0.15)";
+        tCtx.lineWidth = 1;
+        for (let x = 0; x < 800; x += 100) {
+            tCtx.beginPath(); tCtx.moveTo(x, 0); tCtx.lineTo(x, 600); tCtx.stroke();
+        }
+        for (let y = 0; y < 600; y += 100) {
+            tCtx.beginPath(); tCtx.moveTo(0, y); tCtx.lineTo(800, y); tCtx.stroke();
+        }
+
+        // Başlık
+        tCtx.fillStyle = "rgba(255,255,255,0.6)";
+        tCtx.font = "bold 18px sans-serif";
+        tCtx.fillText(m.title + " (MILITARY GRID)", 20, 35);
+
+        mapImg.src = tempCanvas.toDataURL();
         renderCities();
     }
 
-    // ŞEHİR NOKTALARINI YÜKLE
+    setTimeout(resizeCanvas, 100);
+    window.addEventListener("resize", resizeCanvas);
+
+    // HARİTA DEĞİŞTİRME
+    function switchMap(key) {
+        currentMapKey = key;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawVectorMap();
+    }
+
     function renderCities() {
         cityOverlay.innerHTML = "";
         if (!isCityActive) return;
@@ -82,9 +136,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    renderCities();
-
-    // BUTON TIKLAMALARI
+    // BUTONLAR
     document.getElementById("btnErangel").onclick = (e) => { setActiveBtn(e.target); switchMap("erangel"); };
     document.getElementById("btnMiramar").onclick = (e) => { setActiveBtn(e.target); switchMap("miramar"); };
     document.getElementById("btnRondo").onclick = (e) => { setActiveBtn(e.target); switchMap("rondo"); };
@@ -94,7 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
         target.classList.add("active");
     }
 
-    // ÇİZİM MOTORU (TOUCH & MOUSE)
+    // ÇİZİM KODLARI
     let isDrawing = false;
 
     function getPos(e) {
@@ -132,7 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
     canvas.addEventListener("touchmove", (e) => { moveDraw(e); e.preventDefault(); });
     canvas.addEventListener("touchend", stopDraw);
 
-    // KALEM VE RENKLER
+    // KALEM/RENK/TEMİZLİK
     document.querySelectorAll(".color-picker").forEach(p => {
         p.onclick = (e) => {
             document.querySelectorAll(".color-picker").forEach(x => x.classList.remove("active"));
@@ -141,14 +193,9 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     });
 
-    document.getElementById("penThickness").onchange = (e) => {
-        currentLineWidth = e.target.value;
-    };
-
-    document.getElementById("clearCanvasBtn").onclick = () => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-    };
-
+    document.getElementById("penThickness").onchange = (e) => { currentLineWidth = e.target.value; };
+    document.getElementById("clearCanvasBtn").onclick = () => { ctx.clearRect(0, 0, canvas.width, canvas.height); };
+    
     document.getElementById("pencilToggleBtn").onclick = (e) => {
         isPencilActive = !isPencilActive;
         e.currentTarget.classList.toggle("active", isPencilActive);
@@ -165,17 +212,16 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("cityModal").style.display = "none";
     };
 
-    // MOBİL HARİTA AÇ/KAPAT
+    // MOBİL
     document.getElementById("mobileMapOpenBtn").onclick = () => {
         document.getElementById("mapSection").classList.add("mobile-active");
         setTimeout(resizeCanvas, 100);
     };
-
     document.getElementById("mobileMapCloseBtn").onclick = () => {
         document.getElementById("mapSection").classList.remove("mobile-active");
     };
 
-    // CHAT / IGL YANIT MOTORU
+    // CHAT
     const userInput = document.getElementById("userInput");
     const sendBtn = document.getElementById("sendBtn");
     const chatMessages = document.getElementById("chatMessages");
