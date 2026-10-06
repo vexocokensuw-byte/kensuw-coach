@@ -1,20 +1,19 @@
 from flask import Flask, render_template, request, jsonify
 import os
+import requests
 
 app = Flask(__name__, template_folder='.', static_folder='.')
 
 API_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
 
-# Yapay Zekânın Rolü ve Davranış Çerçevesi
 SYSTEM_PROMPT = """
-Sen "KENSUW AI COACH" adında PUBG Mobile e-spor dünyasının en üst seviye IGL (In-Game Leader), Taktik Direktörü ve Analistisin.
+Sen "KENSUW AI COACH" adında profesyonel bir Espor Analisti, PUBG Mobile IGL Koçu ve Oyun Stratejistisin.
 
-GÖREVİN VE YANIT İLKELERİN:
-1. Her soruya TAMAMEN KİŞİSELLEŞTİRİLMİŞ ve BENZERSİZ yanıt ver. Asla hazır kalıp cümle veya tekrarlayan kalıplar kullanma.
-2. Kullanıcı ne sorarsa sorsun (örneğin: harita rotasyonu, araç saklama, drop bölgesi, rakip darlama, 3v4 / 2v4 debriyaj anları, mental yönetim, tournament scrim stratejileri), o durumun mikro ve makro detaylarına in.
-3. Terimleri e-spor jargonuna uygun kullan (Scouting, Split Hold, Edge Play, Center Push, Compound Crash, Pinch, Third Party, Blue Zone Pressure).
-4. Soruda eksik detay varsa (örneğin "main seçelim" denmişse haritayı ve takım oyun tarzını sorarak) kullanıcıya interaktif rehberlik et.
-5. Cevapların açıklayıcı, maddeli, okunması kolay ve profesyonel bir koç otoritesinde olsun.
+GÖREVİN VE DAVRANIŞ KURALLARIN:
+1. GERÇEK BİR İNSAN KOÇ GİBİ KONUŞ: Asla robotik, ezber veya hazır kalıp metinler verme. Kullanıcıyla canlı bir sohbet içindeymiş gibi doğal, samimi ama otoriter bir espor koçu diliyle konuş.
+2. SANA SORULAN HER SORUYU SPESİFİK ANALİZ ET: Sadece rotasyon değil; hassasiyet ayarları, jiroskop, cihaz FPS performansı, turnuva mentali, harita stratejileri, 1v1 clutch anları, rakip okuma, drop bölgeleri veya silah spreyi gibi her konuda özel rehberlik et.
+3. AYNILIKTAN KAÇIN: Aynı soru sorulsa bile asla aynı cümleleri kurma. Yaratıcı ve farklı açılardan yaklaş.
+4. MİKRO VE MAKRO DETAYLAR: Cevaplarında pozisyon alma, görüş açısı (angle), harita okuma (scouting), araç yönetimi ve iletişim (callout) detaylarına in.
 """
 
 @app.route('/')
@@ -28,54 +27,57 @@ def chat():
         user_message = data.get('message', '').strip()
 
         if not user_message:
-            return jsonify({'response': 'Lütfen koça bir taktik sorusu veya scrim senaryosu yazın.'}), 400
+            return jsonify({'response': 'Lütfen koça bir soru yazın.'}), 400
 
-        ai_text = None
+        if not API_KEY:
+            return jsonify({'response': '🚨 **API Key Eksik:** Render panelinde `GEMINI_API_KEY` değişkeni bulunamadı. Lütfen Environment bölümünden ekleyin.'})
 
-        if API_KEY:
-            # 1. Öncelik: Güncel google-genai SDK
+        # Doğrudan Google Gemini REST API Çağrısı (Model: gemini-1.5-flash / gemini-2.0-flash)
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={API_KEY}"
+        
+        payload = {
+            "system_instruction": {
+                "parts": [{"text": SYSTEM_PROMPT}]
+            },
+            "contents": [
+                {
+                    "role": "user",
+                    "parts": [{"text": user_message}]
+                }
+            ],
+            "generationConfig": {
+                "temperature": 0.9,
+                "topP": 0.95
+            }
+        }
+
+        response = requests.post(url, json=payload, timeout=15)
+        res_data = response.json()
+
+        if response.status_code == 200:
             try:
-                from google import genai
-                client = genai.Client(api_key=API_KEY)
-                response = client.models.generate_content(
-                    model='gemini-2.0-flash',
-                    contents=f"{SYSTEM_PROMPT}\n\n[KULLANICI SORUSU/SENARYO]: {user_message}"
-                )
-                if response and response.text:
-                    ai_text = response.text
-            except Exception:
-                pass
-
-            # 2. Öncelik: Legacy google-generativeai SDK
-            if not ai_text:
+                ai_text = res_data['candidates'][0]['content']['parts'][0]['text']
+                return jsonify({'response': ai_text})
+            except (KeyError, IndexError):
+                return jsonify({'response': f"🚨 **API Yanıtı Okunamadı:** {res_data}"})
+        else:
+            # Yedek Model Denemesi (gemini-2.0-flash)
+            url_v2 = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={API_KEY}"
+            res_v2 = requests.post(url_v2, json=payload, timeout=15)
+            res_v2_data = res_v2.json()
+            
+            if res_v2.status_code == 200:
                 try:
-                    import google.generativeai as legacy_genai
-                    legacy_genai.configure(api_key=API_KEY)
-                    model = legacy_genai.GenerativeModel(
-                        model_name="gemini-1.5-flash",
-                        system_instruction=SYSTEM_PROMPT
-                    )
-                    response = model.generate_content(user_message)
-                    if response and response.text:
-                        ai_text = response.text
-                except Exception:
+                    ai_text = res_v2_data['candidates'][0]['content']['parts'][0]['text']
+                    return jsonify({'response': ai_text})
+                except (KeyError, IndexError):
                     pass
 
-        # Eğer API Anahtarında bir sorun varsa akıllı dinamik motor devreye girer
-        if not ai_text:
-            ai_text = generate_dynamic_analysis(user_message)
-
-        return jsonify({'response': ai_text})
+            error_msg = res_data.get('error', {}).get('message', 'Bilinmeyen Hata')
+            return jsonify({'response': f"🚨 **Google API Hatası ({response.status_code}):** {error_msg}"})
 
     except Exception as e:
-        return jsonify({'response': '🚨 Analiz oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.'}), 500
-
-def generate_dynamic_analysis(msg):
-    q = msg.lower()
-    if any(w in q for w in ["selam", "merhaba", "sa", "hey"]):
-        return "🧠 **KENSUW COACH CANLI ANALİZ MERKEZİ:**\n\nSelam IGL! Takımın hazırsa analiz masasına geçelim.\n\nBugün hangi konu üzerinde çalışıyoruz?\n- **Map / Main Alan Seçimi** (Erangel, Miramar, Rondo)\n- **Scrim / Turnuva Rotasyon Hataları**\n- **Early Fight & Compound Crash Taktikleri**\n- **Araç Koruma & Split Düzenleri**\n\nSorunu veya maçtaki özel bir durumu detaylıca yaz, hemen inceleyelim!"
-    else:
-        return f"📌 **IGL STRATEJİK KOÇ DEĞERLENDİRMESİ**\n\nSorduğun *\"{msg}\"* konusuyla ilgili detaylı analizim:\n\n1. **Mikro Karar & Pozisyonlama:** Bu senaryoda ilk öncelik rakipten önce dikey siper (ridge) veya sağlam bir yapı kitlemektir. Görüş açısını kapatmadan scout (öncü) bilgisini anlık paylaşmalısınız.\n2. **Kullanılacak Envanter:** Sis bombalarını sadece kaçış için değil, rakibin görüşünü kesip dikey hat oluşturmak için agresif kullanın.\n3. **Rotasyon / İletişim:** IGL olarak 'Net Çapraz Açı' emri vermeden takım arkadaşlarının tek sıra halinde ilerlemesine izin verme."
+        return jsonify({'response': f"🚨 **Bağlantı Hatası:** {str(e)}"}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
