@@ -72,18 +72,69 @@
         <div class="quick-prompts">
             <button class="prompt-btn" onclick="sendQuickPrompt('Erangel Pochinki main drop için en iyi split taktiği nedir?')">📍 Pochinki Split</button>
             <button class="prompt-btn" onclick="sendQuickPrompt('Phase 3 köprü geçişinde pusuya düşmemek için ne yapmalıyız?')">🚗 Köprü Geçişi</button>
-            <button class="prompt-btn" onclick="sendQuickPrompt('Miramar Pecado erken fight kayıplarını önlemek için IGL komutu nasıl olmalı?')">🏜️️ Pecado Early Fight</button>
+            <button class="prompt-btn" onclick="sendQuickPrompt('Miramar Pecado erken fight kayıplarını önlemek için IGL komutu nasıl olmalı?')">🏜 Pecado Early Fight</button>
             <button class="prompt-btn" onclick="sendQuickPrompt('Alan daralırken araç koruması ve kompozisyon kurma stratejisi ver.')">🛡️ Araç Koruma</button>
         </div>
 
         <div class="input-container">
             <input type="text" id="userInput" placeholder="Taktik sorusu veya scrim hatası yazın..." autocomplete="off">
-            <button id="sendBtn">
+            <button id="sendBtn" onclick="handleSend()">
                 <i class="fa-solid fa-arrow-up"></i>
             </button>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        function handleSend() {
+            const userInput = document.getElementById("userInput");
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            addMessage(text, "user");
+            userInput.value = "";
+
+            setTimeout(() => {
+                const aiResponse = generateCoachResponse(text);
+                addMessage(aiResponse, "ai");
+            }, 400);
+        }
+
+        function addMessage(text, sender) {
+            const chatMessages = document.getElementById("chatMessages");
+            const msgDiv = document.createElement("div");
+            msgDiv.className = `message ${sender === 'user' ? 'user-message' : 'ai-message'}`;
+            
+            const formattedText = text.replace(/\n/g, "<br>");
+            msgDiv.innerHTML = `<div class="message-content">${sender === 'ai' ? '<strong>KENSUW COACH:</strong><br><br>' : ''}${formattedText}</div>`;
+            
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function sendQuickPrompt(promptText) {
+            document.getElementById("userInput").value = promptText;
+            handleSend();
+        }
+
+        document.getElementById("userInput").addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                handleSend();
+            }
+        });
+
+        function generateCoachResponse(query) {
+            const q = query.toLowerCase();
+            if (q.includes("pochinki")) {
+                return "📌 **POCHINKI SPLIT TAKTİĞİ:**\n1. **2-2 Split Düzeni:** Takımın iki oyuncusu Kilise bölgesini (yüksek nokta görüşü için), diğer iki oyuncusu Mavi Evler tarafını tutmalı.\n2. **Rotasyon:** İlk çember kapandığında Kilise grubu görüş açısı verip araçları toplarken, Mavi Evler grubu ana yoldan batıya doğru açılmalıdır.";
+            } else if (q.includes("köprü") || q.includes("kopru")) {
+                return "🚗 **KÖPRÜ GEÇİŞ STRATEJİSİ:**\n1. **Scout (Öncü) Atama:** Köprüye asla 4 kişi birden girmeyin. Bir kişi hızlı motor/buggy ile pusu kontrolü yapmalıdır.\n2. **Bot Geçişi:** Köprü tutulmuşsa vakit kaybetmeden deniz kenarından tekne/bot arayışına geçilmeli ya da doğu kanadındaki sudan yüzme hatları kullanılmalıdır.";
+            } else if (q.includes("pecado")) {
+                return "🏜️ **PECADO EARLY FIGHT KURALI:**\n1. **Casino & Arena İzolasyonu:** Asla aynı anda hem Casino hem Arena'ya bölünmeyin. Tüm takım Casino merkezli düşüp çatı alanını kapatmalıdır.\n2. **IGL Komutu:** İlk silah alındığı an bireysel fight yerine doğrudan çatı üstünden 4'lü baskı kurulmalıdır.";
+            } else {
+                return "📌 **IGL & KOÇ DERSİ:**\n\n1. **Araç Koruma:** Maç ortasına 4 araçla girmek alan içi siper ve hayatta kalma şansınızı %60 artırır.\n2. **Alan İçi Disiplin:** Çember kapanırken gereksiz skor arayışına girmeyin, puan odaklı alan merkezine sızın.\n3. **Komuta Zinciri:** Çatışma anında IGL tek bir hedef gösterdiği an tüm takım aynı hedefe odaklanmalıdır.";
+            }
+        }
+    </script>
 </body>
 </html>
