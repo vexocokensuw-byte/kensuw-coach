@@ -9,9 +9,8 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
         body { background-color: #000000; color: #ffffff; height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
 
-        .app-container { width: 100vw; height: 100vh; max-width: 1200px; display: flex; flex-direction: column; background-color: #0a0a0a; border-left: 1px solid #1a1a1a; border-right: 1px solid #1a1a1a; }
+        .app-container { width: 100vw; height: 100vh; max-width: 1000px; display: flex; flex-direction: column; background-color: #0a0a0a; border-left: 1px solid #1a1a1a; border-right: 1px solid #1a1a1a; }
 
-        /* ÜST HEADER / LOGO ALANI */
         .header { display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; background-color: #050505; border-bottom: 1px solid #222222; }
         .logo-box { display: flex; align-items: center; gap: 14px; }
         .logo-icon { width: 42px; height: 42px; background: #ffffff; color: #000000; font-weight: 900; font-size: 22px; display: flex; align-items: center; justify-content: center; border-radius: 8px; clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%); }
@@ -20,39 +19,33 @@
         .status-badge { background: #181818; border: 1px solid #333333; color: #ffffff; font-size: 12px; padding: 6px 12px; border-radius: 20px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
         .status-dot { width: 8px; height: 8px; background-color: #ffffff; border-radius: 50%; box-shadow: 0 0 8px #ffffff; }
 
-        /* CHAT SOHBET ALANI */
         .chat-container { flex: 1; padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; background-color: #0a0a0a; }
-        .message { display: flex; width: 100%; max-width: 850px; }
+        .message { display: flex; width: 100%; }
         .ai-message { align-self: flex-start; }
         .user-message { align-self: flex-end; justify-content: flex-end; }
-        .message-content { padding: 16px 20px; border-radius: 12px; font-size: 15px; line-height: 1.6; max-width: 100%; }
+        .message-content { padding: 16px 20px; border-radius: 12px; font-size: 15px; line-height: 1.6; max-width: 80%; }
         
         .ai-message .message-content { background-color: #121212; border: 1px solid #262626; color: #e5e5e5; border-top-left-radius: 2px; }
         .user-message .message-content { background-color: #ffffff; color: #000000; font-weight: 600; border-top-right-radius: 2px; }
 
-        /* HIZLI TAKTİK İPUÇLARI (QUICK COMMANDS) */
         .quick-prompts { display: flex; gap: 10px; padding: 10px 24px; overflow-x: auto; background-color: #050505; border-top: 1px solid #1a1a1a; }
-        .prompt-btn { background: #111111; color: #aaaaaa; border: 1px solid #262626; padding: 8px 14px; border-radius: 6px; font-size: 12px; cursor: pointer; white-space: nowrap; font-weight: 500; transition: all 0.2s; }
+        .prompt-btn { background: #111111; color: #aaaaaa; border: 1px solid #262626; padding: 8px 14px; border-radius: 6px; font-size: 12px; cursor: pointer; white-space: nowrap; font-weight: 500; }
         .prompt-btn:hover { background: #ffffff; color: #000000; border-color: #ffffff; }
 
-        /* GİRDİ ALANI */
         .input-container { padding: 18px 24px; background-color: #050505; border-top: 1px solid #222222; display: flex; gap: 12px; align-items: center; }
-        .input-container input { flex: 1; background-color: #121212; border: 1px solid #2a2a2a; padding: 14px 20px; border-radius: 8px; color: #ffffff; outline: none; font-size: 15px; transition: border 0.2s; }
+        .input-container input { flex: 1; background-color: #121212; border: 1px solid #2a2a2a; padding: 14px 20px; border-radius: 8px; color: #ffffff; outline: none; font-size: 15px; }
         .input-container input:focus { border-color: #ffffff; }
-        .input-container button { width: 48px; height: 48px; background-color: #ffffff; border: none; border-radius: 8px; color: #000000; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; transition: opacity 0.2s; }
-        .input-container button:hover { opacity: 0.85; }
+        .input-container button { width: 48px; height: 48px; background-color: #ffffff; border: none; border-radius: 8px; color: #000000; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; }
 
         @media (max-width: 768px) {
             .brand-text span { display: none; }
-            .header { padding: 14px; }
-            .chat-container { padding: 16px; }
-            .input-container { padding: 14px; }
+            .header, .chat-container, .input-container { padding: 14px; }
+            .message-content { max-width: 90%; }
         }
     </style>
 </head>
 <body>
     <div class="app-container">
-        <!-- HEADER -->
         <div class="header">
             <div class="logo-box">
                 <div class="logo-icon">K</div>
@@ -67,25 +60,22 @@
             </div>
         </div>
 
-        <!-- SOHBET ALANI -->
         <div class="chat-container" id="chatMessages">
             <div class="message ai-message">
                 <div class="message-content">
-                    <strong>📌 [IGL & KOÇ ANALİZ MERKEZİ]</strong><br><br>
-                    Merhaba IGL! Takımının scrim/turnuva maçlarındaki rotasyon hatalarını, drop bölgesi split'lerini, erken çatışma (early fight) sorunlarını veya çember içi konumlanma stratejilerini analiz etmeye hazırım. Sorunu aşağıya yazabilirsin!
+                    📌 <strong>[IGL & KOÇ ANALİZ MERKEZİ]</strong><br><br>
+                    Merhaba IGL! Takımının scrim/turnuva maçlarındaki rotasyon hatalarını, drop bölgesi split'lerini veya erken çatışma sorunlarını analiz etmeye hazırım. Sorunu aşağıya yazabilirsin!
                 </div>
             </div>
         </div>
 
-        <!-- HIZLI SORU BUTONLARI -->
         <div class="quick-prompts">
-            <button class="prompt-btn" onclick="sendQuickPrompt('Erangel Pochinki main drop için en iyi 1-3 split taktiği nedir?')">📍 Pochinki Split</button>
-            <button class="prompt-btn" onclick="sendQuickPrompt('Scrim maçlarında Phase 3 köprü geçişinde pusuya düşmemek için ne yapmalıyız?')">🚗 Köprü Geçişi</button>
-            <button class="prompt-btn" onclick="sendQuickPrompt('Miramar Pecado erken fight kayıplarını önlemek için IGL komutu nasıl olmalı?')">🏜️ Pecado Early Fight</button>
+            <button class="prompt-btn" onclick="sendQuickPrompt('Erangel Pochinki main drop için en iyi split taktiği nedir?')">📍 Pochinki Split</button>
+            <button class="prompt-btn" onclick="sendQuickPrompt('Phase 3 köprü geçişinde pusuya düşmemek için ne yapmalıyız?')">🚗 Köprü Geçişi</button>
+            <button class="prompt-btn" onclick="sendQuickPrompt('Miramar Pecado erken fight kayıplarını önlemek için IGL komutu nasıl olmalı?')">🏜️️ Pecado Early Fight</button>
             <button class="prompt-btn" onclick="sendQuickPrompt('Alan daralırken araç koruması ve kompozisyon kurma stratejisi ver.')">🛡️ Araç Koruma</button>
         </div>
 
-        <!-- INPUT -->
         <div class="input-container">
             <input type="text" id="userInput" placeholder="Taktik sorusu veya scrim hatası yazın..." autocomplete="off">
             <button id="sendBtn">
