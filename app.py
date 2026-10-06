@@ -33,16 +33,25 @@ def chat():
         if not user_message:
             return jsonify({'response': 'Lütfen bir mesaj yazın.'}), 400
 
-        # Eğer API KEY tanımlıysa doğrudan akıllı Gemini modelini çalıştır
+        # API KEY varsa akıllı Gemini modelini çalıştır
         if API_KEY:
-            model = genai.GenerativeModel(
-                model_name="gemini-1.5-flash",
-                system_instruction=SYSTEM_PROMPT
-            )
-            response = model.generate_content(user_message)
-            ai_text = response.text
+            # Model adını 404 vermeyecek en güncel standart isimle çağırıyoruz
+            try:
+                model = genai.GenerativeModel(
+                    model_name="gemini-2.5-flash",
+                    system_instruction=SYSTEM_PROMPT
+                )
+                response = model.generate_content(user_message)
+                ai_text = response.text
+            except Exception as model_err:
+                # Eğer 2.5-flash modelinde sorun olursa yedek güncel modele geçiş
+                model = genai.GenerativeModel(
+                    model_name="gemini-1.5-flash-latest",
+                    system_instruction=SYSTEM_PROMPT
+                )
+                response = model.generate_content(user_message)
+                ai_text = response.text
         else:
-            # Yedek Akıllı Motor (API Key girilmediyse dinamik cevap üretir)
             ai_text = generate_dynamic_fallback(user_message)
 
         return jsonify({'response': ai_text})
