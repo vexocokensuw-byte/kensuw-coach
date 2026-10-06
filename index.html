@@ -10,9 +10,7 @@
         body { background-color: #0b1017; color: #e2e8f0; height: 100vh; overflow: hidden; }
         .app-container { display: flex; width: 100vw; height: 100vh; position: relative; }
 
-        /* SOL PANEL: HARİTA VE TACTICAL BOARD */
         .map-section { width: 60%; height: 100%; background-color: #111827; display: flex; flex-direction: column; border-right: 1px solid #1e293b; position: relative; }
-        
         .map-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background-color: #1a2332; border-bottom: 1px solid #243147; z-index: 100; }
         .brand-title { display: flex; align-items: center; gap: 8px; font-weight: 700; color: #34c759; font-size: 16px; }
         .map-selector { display: flex; gap: 8px; z-index: 101; }
@@ -20,22 +18,15 @@
         .map-btn.active, .map-btn:hover { background: linear-gradient(135deg, #007aff, #34c759); color: #ffffff; border-color: transparent; box-shadow: 0 0 12px rgba(52, 199, 89, 0.3); }
         .mobile-map-close { display: none; background: transparent; border: none; color: #ef4444; font-size: 22px; cursor: pointer; }
 
-        .map-display-container { flex: 1; position: relative; width: 100%; height: 100%; overflow: hidden; background-color: #000; }
+        .map-display-container { flex: 1; position: relative; width: 100%; height: 100%; overflow: hidden; background-color: #0b131e; }
+        .map-wrapper { position: relative; width: 100%; height: 100%; }
         
-        .map-wrapper { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
-        
-        /* GERÇEK HARİTA GÖRSEL KATMANI */
-        #mapImg { width: 100%; height: 100%; object-fit: contain; position: absolute; top: 0; left: 0; z-index: 1; }
-        
-        /* ÇİZİM VE DOKUNMA KATMANI */
         #drawCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: crosshair; z-index: 10; touch-action: none; }
 
-        /* ŞEHİR BİLGİ DOKUNMA NOKTALARI */
         #cityOverlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 20; display: block; }
         .city-dot { position: absolute; width: 18px; height: 18px; background-color: #007aff; border: 2px solid #ffffff; border-radius: 50%; cursor: pointer; transform: translate(-50%, -50%); pointer-events: auto; box-shadow: 0 0 10px #007aff; animation: pulse 1.8s infinite; }
         @keyframes pulse { 0% { transform: translate(-50%, -50%) scale(0.9); } 70% { transform: translate(-50%, -50%) scale(1.2); } 100% { transform: translate(-50%, -50%) scale(0.9); } }
 
-        /* ALT ARAÇ BARI */
         .map-controls { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; background-color: #1a2332; gap: 12px; z-index: 100; }
         .control-group { display: flex; align-items: center; gap: 10px; }
         .tool-btn { background-color: #1e293b; color: #e2e8f0; border: 1px solid #334155; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px; }
@@ -46,7 +37,6 @@
         .thickness-select { background: #0f172a; color: #ffffff; border: 1px solid #334155; border-radius: 4px; padding: 4px 6px; font-size: 12px; }
         .tool-btn-danger { background: #ef444422; border: 1px solid #ef444466; color: #ef4444; padding: 8px 10px; border-radius: 6px; cursor: pointer; }
 
-        /* SAĞ PANEL: CHAT / KOÇ ANALİZİ */
         .chat-section { flex: 1; height: 100%; display: flex; flex-direction: column; background-color: #0b1017; }
         .chat-header { padding: 16px 20px; background-color: #161f2c; border-bottom: 1px solid #222f43; }
         .chat-title { display: flex; align-items: center; gap: 12px; }
@@ -83,7 +73,6 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- SOL PANEL: HARİTA -->
         <div class="map-section" id="mapSection">
             <div class="map-header">
                 <div class="brand-title">
@@ -102,7 +91,6 @@
 
             <div class="map-display-container" id="mapDisplayContainer">
                 <div class="map-wrapper" id="mapWrapper">
-                    <img id="mapImg" src="https://i.ibb.co/3sZqHwX/erangel-map.jpg" alt="PUBG Map">
                     <canvas id="drawCanvas"></canvas>
                     <div id="cityOverlay"></div>
                 </div>
@@ -137,7 +125,6 @@
             </div>
         </div>
 
-        <!-- SAĞ PANEL: CHAT -->
         <div class="chat-section">
             <div class="chat-header">
                 <div class="chat-title">
