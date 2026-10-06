@@ -12,28 +12,31 @@
 
         /* SOL PANEL: HARİTA */
         .map-section { width: 60%; height: 100%; background-color: #111827; display: flex; flex-direction: column; border-right: 1px solid #1e293b; position: relative; }
-        .map-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background-color: #1a2332; border-bottom: 1px solid #243147; }
+        
+        /* ÜST BARI Z-INDEX İLE ÖNE ÇIKARDIK */
+        .map-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background-color: #1a2332; border-bottom: 1px solid #243147; z-index: 50; }
         .brand-title { display: flex; align-items: center; gap: 8px; font-weight: 700; color: #34c759; font-size: 16px; }
-        .map-selector { display: flex; gap: 8px; }
+        .map-selector { display: flex; gap: 8px; z-index: 60; }
         .map-btn { background: #1e293b; color: #94a3b8; border: 1px solid #334155; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; }
         .map-btn.active, .map-btn:hover { background: linear-gradient(135deg, #007aff, #34c759); color: #ffffff; border-color: transparent; box-shadow: 0 0 12px rgba(52, 199, 89, 0.3); }
         .mobile-map-close { display: none; background: transparent; border: none; color: #ef4444; font-size: 22px; cursor: pointer; }
 
-        .map-display-container { flex: 1; position: relative; width: 100%; height: 100%; overflow: hidden; background-color: #0b131e; display: flex; align-items: center; justify-content: center; }
+        .map-display-container { flex: 1; position: relative; width: 100%; height: 100%; overflow: hidden; background-color: #0b131e; }
         
-        /* HARİTA KAPSAYICI */
         .map-wrapper { position: relative; width: 100%; height: 100%; }
-        .svg-map { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
-        #drawCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: crosshair; z-index: 10; }
+        .svg-map { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none; }
+        
+        /* CANVAS'I ÇİZİM İÇİN EN ÜST KATMANA ALDIK */
+        #drawCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: crosshair; z-index: 20; touch-action: none; }
 
         /* ŞEHİR DOKUNMA NOKTALARI */
-        #cityOverlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 20; display: none; }
+        #cityOverlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 25; display: none; }
         #cityOverlay.active { display: block; }
         .city-dot { position: absolute; width: 18px; height: 18px; background-color: #007aff; border: 2px solid #ffffff; border-radius: 50%; cursor: pointer; transform: translate(-50%, -50%); pointer-events: auto; box-shadow: 0 0 10px #007aff; animation: pulse 1.8s infinite; }
         @keyframes pulse { 0% { transform: translate(-50%, -50%) scale(0.9); } 70% { transform: translate(-50%, -50%) scale(1.2); } 100% { transform: translate(-50%, -50%) scale(0.9); } }
 
         /* ALT ARAÇ BARI */
-        .map-controls { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; background-color: #1a2332; gap: 12px; z-index: 30; }
+        .map-controls { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; background-color: #1a2332; gap: 12px; z-index: 50; }
         .control-group { display: flex; align-items: center; gap: 10px; }
         .tool-btn { background-color: #1e293b; color: #e2e8f0; border: 1px solid #334155; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px; }
         .tool-btn.active { border-color: #34c759; color: #34c759; }
@@ -71,7 +74,7 @@
         .modal-close { position: absolute; right: 16px; top: 12px; font-size: 24px; cursor: pointer; color: #94a3b8; }
 
         @media (max-width: 768px) {
-            .map-section { position: fixed; top: 0; left: 0; width: 100% !important; height: 100%; z-index: 50; display: none; }
+            .map-section { position: fixed; top: 0; left: 0; width: 100% !important; height: 100%; z-index: 100; display: none; }
             .map-section.mobile-active { display: flex; }
             .mobile-map-close { display: block; }
             .mobile-map-trigger-container { display: block; }
@@ -102,13 +105,12 @@
                     <!-- VECTOR TACTICAL MAP -->
                     <svg class="svg-map" id="svgMap" viewBox="0 0 800 600" preserveAspectRatio="none">
                         <rect width="800" height="600" id="mapBg" fill="#0f1d2a"/>
-                        <!-- Ana Ada -->
-                        <path id="mapIsland" d="M 100,80 L 700,80 L 700,420 L 100,420 Z" fill="#1b3823" stroke="#2a5737" stroke-width="3"/>
-                        <!-- Askeri Ada -->
-                        <path id="mapSubIsland" d="M 220,460 L 580,460 L 580,560 L 220,560 Z" fill="#162e1d" stroke="#2a5737" stroke-width="2"/>
-                        <!-- Köprüler -->
-                        <rect id="bridge1" x="320" y="420" width="20" height="40" fill="#4a5568"/>
-                        <rect id="bridge2" x="460" y="420" width="20" height="40" fill="#4a5568"/>
+                        <!-- Erangel Ana Ada / Şema -->
+                        <path id="mapIsland" d="M 80,60 L 720,60 L 720,400 L 80,400 Z" fill="#1b3823" stroke="#2a5737" stroke-width="3"/>
+                        <path id="mapSubIsland" d="M 220,450 L 580,450 L 580,560 L 220,560 Z" fill="#162e1d" stroke="#2a5737" stroke-width="2"/>
+                        <rect id="bridge1" x="320" y="400" width="20" height="50" fill="#4a5568"/>
+                        <rect id="bridge2" x="460" y="400" width="20" height="50" fill="#4a5568"/>
+                        
                         <!-- Izgara Çizgileri -->
                         <g stroke="rgba(255,255,255,0.12)" stroke-width="1">
                             <line x1="100" y1="0" x2="100" y2="600"/><line x1="200" y1="0" x2="200" y2="600"/>
@@ -119,7 +121,6 @@
                             <line x1="0" y1="300" x2="800" y2="300"/><line x1="0" y1="400" x2="800" y2="400"/>
                             <line x1="0" y1="500" x2="800" y2="500"/>
                         </g>
-                        <!-- Harita Ismi -->
                         <text x="20" y="35" id="mapTitleText" fill="rgba(255,255,255,0.5)" font-size="16" font-weight="bold">ERANGEL TACTICAL MAP (MILITARY GRID)</text>
                     </svg>
                     
