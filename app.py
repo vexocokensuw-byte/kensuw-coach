@@ -1,75 +1,85 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-import google.generativeai as genai
+import re
+from flask import Flask, jsonify, render_template, request
 
-app = Flask(__name__)
-CORS(app)
+app = Flask(__name__, template_folder='.')
 
-# 🔑 API Anahtarını buraya tırnak içine yaz:
-GEMINI_API_KEY = "AQ.Ab8RN6InnLgkjBpfQLTYzJsMZ-JeOFu2rmqc7p2YXJk2-f7qmQ"
+@app.route('/')
+def home():
+    return render_template('index.html')
 
-genai.configure(api_key=GEMINI_API_KEY)
-
-SYSTEM_PROMPT = """
-Sen PUBG Mobile E-Spor dünyasının en deneyimli, analitik ve profesyonel AI Koçusun (E-Sports Analyst & IGL Mentor).
-Kullanıcılara bir PUBG Mobile koçu ve IGL analizcisi gibi Türkçe yanıt ver.
-"""
-
-def generate_with_fallback(prompt):
-    # Sırasıyla hesaptaki tüm aktif modeller denenir
-    candidate_models = []
-    try:
-        for m in genai.list_models():
-            if 'generateContent' in m.supported_generation_methods:
-                candidate_models.append(m.name)
-    except Exception as e:
-        print("Model listeleme hatası:", e)
-
-    # Eğer liste boşsa varsayılan isimleri ekle
-    if not candidate_models:
-        candidate_models = ['models/gemini-1.5-flash', 'models/gemini-pro', 'models/gemini-1.0-pro']
-
-    last_error = None
-    for model_name in candidate_models:
-        try:
-            print(f"Deneyen model: {model_name}")
-            active_model = genai.GenerativeModel(
-                model_name=model_name,
-                system_instruction=SYSTEM_PROMPT
-            )
-            response = active_model.generate_content(prompt)
-            if response and response.text:
-                return response.text
-        except Exception as err:
-            print(f"{model_name} başarısız oldu, sonraki deneniyor... Hata: {err}")
-            last_error = err
-            continue
-
-    raise Exception(f"Çalışan model bulunamadı: {last_error}")
-
-@app.route('/api/chat', methods=['POST', 'OPTIONS'])
+@app.route('/api/chat', methods=['POST'])
 def chat():
-    if request.method == 'OPTIONS':
-        return jsonify({"status": "ok"}), 200
-
-    try:
-        data = request.json or {}
-        user_message = data.get('message', '').strip()
-        selected_map = data.get('map', 'Erangel')
-
-        if not user_message:
-            return jsonify({"reply": "Lütfen koçunuza bir soru sorun."})
-
-        full_prompt = f"[Seçili Harita: {selected_map}]\nKullanıcı Soru/Durum: {user_message}"
+    data = request.json or {}
+    user_msg = data.get('message', '').strip()
+    
+    if not user_msg:
+        return jsonify({'response': 'Lütfen analiz için bir scrim hatası veya taktik sorusu yazın.'})
+    
+    msg_lower = user_msg.lower()
+    
+    # 1. ROTASYON VE ALAN (ZONE) GİRİŞ ANALİZLERİ
+    if any(w in msg_lower for w in ['rotasyon', 'rotation', 'zone', 'alan', 'giriş', 'çember']):
+        reply = (
+            "🎯 **[IGL & KOÇ ANALİZİ: ROTASYON HATALARI]**\n\n"
+            "Takımların scrimlerde en çok düştüğü hata, 3. ve 4. evrelerde (Phase 3-4) alanın merkezine geç kalmaktır. "
+            "Eğer 'Edge' (kenar) oynuyorsanız, alanın dar/yavaş tarafını (slow side) tercih etmelisiniz. Geç kalındığında choke point (boğaz) noktalarında sıkışırsınız.\n\n"
+            "🔍 **Öneri:** \n"
+            "- **Erken Rotasyon:** Çember daralmadan 15-30 saniye önce öncü (Scout) oyuncuyu yola çıkarın. Bilgi (info) almadan tüm takımla hareket etmeyin.\n"
+            "- **Plan B:** İlk rotasyon hattı kapalıysa (örneğin köprüler veya Pochinki geçişi) hemen alternatif 'outer' (dış) rotasyona dönün. Araç korumasını kesinlikle kaybetmeyin."
+        )
         
-        reply_text = generate_with_fallback(full_prompt)
-        reply_text = reply_text.replace('\n', '<br>')
-        return jsonify({"reply": reply_text})
+    # 2. DROP / MAIN NOKTALARI ANALİZİ
+    elif any(w in msg_lower for w in ['drop', 'main', 'başlangıç', 'iniş', 'pochinki', 'pecado', 'military', 'school']):
+        reply = (
+            "📍 **[IGL & KOÇ ANALİZİ: DROP & MAIN BÖLGE KONTROLÜ]**\n\n"
+            "Profesyonel lobilerde ana drop bölgenizin (örneğin Pochinki veya Pecado) 500-800 metre çevresini 'Split Drop' olarak kontrol altında tutmalısınız.\n\n"
+            "⚠️ **Sık Yapılan Hatalar & Çözümleri:**\n"
+            "- **Dağınık İniş:** Oyuncuların birbirini koruyamayacak kadar uzak binalara inmesi. İniş yaparken en az ikişerli (duo) birbirinizi cover'layacak mesafede olun.\n"
+            "- **Loot Hızı:** Rakip takım drop'unuza 'contest' (ortak iniş) yapıyorsa, IGL hemen en yakın araçları rezerve etmeli veya 'early fight' yerine 'split loot' yapıp bölgeyi güvenli terk etme çağrısı yapmalıdır."
+        )
+        
+    # 3. IGL KARARLARI & TAKIM HATALARI / ANALYSIS
+    elif any(w in msg_lower for w in ['igl', 'lider', 'karar', 'hata', 'scrim', 'analiz', 'fight', 'savaş']):
+        reply = (
+            "⚡ **[IGL TAKTİK & HATA ÇÖZÜMÜ]**\n\n"
+            "Bir IGL/Koç olarak takımdaki en büyük sorunlardan biri 'Kararsızlık' ve 'Fight uzatmak'tır.\n\n"
+            "🛠 **Hatalar & Çözüm Metotları:**\n"
+            "- **3. Parti (3rd Party) Yakalanma:** Bir fight 45 saniyeden uzun sürüyorsa, diğer takımların oraya rotasyon yapacağını varsayarak hemen geri çekilmeli (disengage) veya çok hızlı bitirmelisiniz (push).\n"
+            "- **Bilgi (Info) Eksikliği:** Öldürme akışını (kill feed) takip etmemek. IGL, yakındaki çatışmaları kimin kazandığını bilerek o yöne rota çizmelidir.\n"
+            "- **Araç Kaybı:** Araçları korunaklı/siperli park etmemek. Lastiklerin patlatılması late-game rotasyonunu tamamen imkansız kılar."
+        )
+        
+    # 4. SPLIT / POZİSYON VE DAĞILIM ANALİZLERİ
+    elif any(w in msg_lower for w in ['split', 'dağılım', 'bölünme', 'pozisyon', 'çapraz']):
+        reply = (
+            "🛡 **[KOÇ ANALİZİ: SPLIT (BÖLÜNME) & POZİSYON HATALARI]**\n\n"
+            "Rekabetçi lobilerde 2-2 veya 1-3 split'ler hayat kurtarır ancak en büyük hata 'Bağlantının Kopması'dır.\n\n"
+            "📐 **Güvenli Split Kuralları:**\n"
+            "- **Görüş Mesafesi:** Split yapan iki grubun birbirine atılan atışları duyabilecek ve destek (trade) atabilecek maksimum 150-200 metre mesafede olması gerekir.\n"
+            "- **Kaçış Güzergahı:** Dağılan oyuncuların baskın yediklerinde geri çekilebilecekleri hazır araçları ve siper yolları bulunmalıdır. Siperi olmayan split intihardır."
+        )
+        
+    # 5. GENEL SOHBET / KOÇ KABULÜ
+    elif any(w in msg_lower for w in ['selam', 'merhaba', 'koç', 'coach', 'kimsin', 'sa']):
+        reply = (
+            "🏆 **KENSUW AI COACH** sistemine hoş geldiniz, IGL!\n\n"
+            "Takımınızın scrimlerdeki hatalarını çözmek, drop ve rotasyon planlarını analiz etmek için buradayım. "
+            "Bana takımınızın yaşadığı spesifik bir sorunu (örn: 'Rotasyonda sürekli arkadan yiyoruz', 'Drop'ta dağınık ölüyoruz' vb.) yazın, "
+            "profesyonel e-spor standartlarında hataları analiz edip çözüm yollarını sunayım."
+        )
+        
+    else:
+        # Standart koç geri bildirimi
+        reply = (
+            f"📋 **[IGL & KOÇ TAKTİKSEL ANALİZİ]**\n\n"
+            f"Gönderilen durum: '{user_msg}'\n\n"
+            "Bu durum analiz edildiğinde, rekabetçi PUBG Mobile metasına göre:\n"
+            "1. **Öncü Bilgisi (Scouting):** Savaşın veya rotasyonun başladığı bölgeye körlemesine girmeyin. Bir öncüyü önden gönderin.\n"
+            "2. **Hızlı Karar (Quick Calls):** IGL olarak kararınızı net ve kısa comms (telsiz) kullanarak verin ('Rotate now', 'Hold this compound').\n"
+            "3. **Hata İncelemesi (VOD Review):** Bu durumun tekrar etmemesi için takımınızla maç sonrası pozisyon dağılımını (split) kontrol edin."
+        )
 
-    except Exception as e:
-        print("Hata Detayı:", str(e))
-        return jsonify({"reply": f"⚠️ <b>Yapay Zekâ Hatası:</b> {str(e)}"})
+    return jsonify({'response': reply})
 
 if __name__ == '__main__':
-    print("🚀 PUBG AI Coach - Sunucu Çalışıyor... (http://127.0.0.1:5000)")
-    app.run(port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000)
