@@ -1,25 +1,31 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // Harita Bağlantıları
+    // GERÇEK PUBG MOBILE HARİTA GÖRSELLERİ VE ŞEHİR KOORDİNATLARI
     const maps = {
         erangel: {
-            img: "https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=1000&auto=format&fit=crop",
+            img: "https://raw.githubusercontent.com/pubg/dev-assets/master/assets/maps/Erangel_Main_Low_Res.png",
             cities: [
-                { name: "Pochinki", x: "48%", y: "48%", info: "Pochinki: Haritanın tam merkezinde yüksek loot ve yoğun çatışma bölgesi." },
-                { name: "School", x: "54%", y: "42%", info: "School: Hızlı aksiyon arayanların ilk tercihi olan orta alan." },
-                { name: "Military Base", x: "60%", y: "80%", info: "Sosnovka Military Base: En üst seviye zırh ve kaskların çıktığı ada bölgesi." }
+                { name: "Pochinki", x: "47%", y: "49%", info: "Pochinki: Haritanın merkezinde yüksek loot ve çatışma bölgesi." },
+                { name: "School", x: "53%", y: "42%", info: "School: Hızlı aksiyon arayan oyuncuların ilk tercihi." },
+                { name: "Military Base", x: "60%", y: "82%", info: "Sosnovka Military Base: Üst düzey zırh ve silahların çıktığı ada bölgesi." },
+                { name: "Georgopol", x: "25%", y: "30%", info: "Georgopol: Konteynerler ve liman bölgesiyle zengin harita alanı." },
+                { name: "Mylta Power", x: "85%", y: "58%", info: "Mylta Power: Haritanın doğusundaki yüksek Seviye 3 kask/zırh alanı." }
             ]
         },
         miramar: {
-            img: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?q=80&w=1000&auto=format&fit=crop",
+            img: "https://raw.githubusercontent.com/pubg/dev-assets/master/assets/maps/Miramar_Main_Low_Res.png",
             cities: [
-                { name: "Pecado", x: "50%", y: "52%", info: "Pecado: Casino ve Arena binalarıyla Miramar'ın kalbi." },
-                { name: "Hacienda", x: "62%", y: "38%", info: "Hacienda del Patron: Çok dar alanda yüksek riskli lüks villa alanı." }
+                { name: "Pecado", x: "48%", y: "54%", info: "Pecado: Casino ve Arena binalarıyla Miramar'ın kalbi." },
+                { name: "Hacienda del Patron", x: "60%", y: "39%", info: "Hacienda: Çok dar alanda yüksek riskli lüks villa alanı." },
+                { name: "El Pozo", x: "28%", y: "25%", info: "El Pozo: Haritanın kuzeybatısındaki devasa şehir bölgesi." },
+                { name: "Los Leones", x: "68%", y: "70%", info: "Los Leones: Haritanın en büyük metropol alanı." }
             ]
         },
         rondo: {
-            img: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1000&auto=format&fit=crop",
+            img: "https://images.squarespace-cdn.com/content/v1/59af2189c59cae121262d511/1701889812423-H86V1Y3W4O20D54X9O5O/Rondo_Map.jpg",
             cities: [
-                { name: "Jadam City", x: "45%", y: "55%", info: "Jadam City: Yüksek binalar ve dikey çatışmalar içeren büyük metropol." }
+                { name: "Jadam City", x: "52%", y: "58%", info: "Jadam City: Yüksek binalar ve dikey çatışmalar içeren dev metropol." },
+                { name: "NEOX Factory", x: "70%", y: "35%", info: "NEOX Factory: Yeni araç test pisti ve fabrika binaları." },
+                { name: "Yu Lin", x: "35%", y: "40%", info: "Yu Lin: Geleneksel mimari ve dar sokaklar." }
             ]
         }
     };
@@ -51,6 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Canvas Boyutlandırma
     function resizeCanvas() {
+        if (!mapImg) return;
         canvas.width = mapImg.clientWidth;
         canvas.height = mapImg.clientHeight;
     }
@@ -62,7 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.addEventListener("resize", resizeCanvas);
 
-    // Harita Değiştirme
+    // Harita Butonları (Erangel, Miramar, Rondo)
     document.querySelectorAll(".map-btn").forEach(btn => {
         btn.addEventListener("click", (e) => {
             document.querySelectorAll(".map-btn").forEach(b => b.classList.remove("active"));
@@ -73,7 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // Kalem / Çizim Mantığı
+    // Çizim Araçları (Kalem)
     let isDrawing = false;
 
     pencilToggleBtn.addEventListener("click", () => {
@@ -133,7 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
         isDrawing = false;
     }
 
-    // Şehir Bilgi Mantığı
+    // Şehir Bilgisi Göster/Gizle
     cityInfoToggleBtn.addEventListener("click", () => {
         isCityInfoOpen = !isCityInfoOpen;
         cityBadge.textContent = isCityInfoOpen ? "Açık" : "Kapat";
@@ -155,7 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Modal İşlemleri
+    // Modal Penceresi
     const modal = document.getElementById("cityModal");
     const modalTitle = document.getElementById("modalTitle");
     const modalDesc = document.getElementById("modalDescription");
@@ -167,23 +174,29 @@ document.addEventListener("DOMContentLoaded", () => {
         modal.style.display = "flex";
     }
 
-    // Panel Genişletme (Masaüstü)
-    resizeHandle.addEventListener("click", () => {
-        mapSection.classList.toggle("expanded");
-        const isExpanded = mapSection.classList.contains("expanded");
-        resizeIcon.className = isExpanded ? "fa-solid fa-arrows-left-right-to-line" : "fa-solid fa-arrows-left-right";
-        setTimeout(resizeCanvas, 300);
-    });
+    // Masaüstü Panel Genişletme
+    if (resizeHandle) {
+        resizeHandle.addEventListener("click", () => {
+            mapSection.classList.toggle("expanded");
+            const isExpanded = mapSection.classList.contains("expanded");
+            resizeIcon.className = isExpanded ? "fa-solid fa-arrows-left-right-to-line" : "fa-solid fa-arrows-left-right";
+            setTimeout(resizeCanvas, 300);
+        });
+    }
 
-    // Mobil Aç / Kapat
-    mobileMapOpenBtn.addEventListener("click", () => {
-        mapSection.classList.add("mobile-active");
-        setTimeout(resizeCanvas, 100);
-    });
+    // Mobil Aç/Kapat Butonları
+    if (mobileMapOpenBtn) {
+        mobileMapOpenBtn.addEventListener("click", () => {
+            mapSection.classList.add("mobile-active");
+            setTimeout(resizeCanvas, 100);
+        });
+    }
 
-    mobileMapCloseBtn.addEventListener("click", () => {
-        mapSection.classList.remove("mobile-active");
-    });
+    if (mobileMapCloseBtn) {
+        mobileMapCloseBtn.addEventListener("click", () => {
+            mapSection.classList.remove("mobile-active");
+        });
+    }
 
     // Chat Soru-Cevap
     const userInput = document.getElementById("userInput");
@@ -198,7 +211,7 @@ document.addEventListener("DOMContentLoaded", () => {
         userInput.value = "";
 
         setTimeout(() => {
-            addMessage(`KENSUW Coach Analizi: "${text}" sorunuz için haritada belirtilen taktiksel rotaları izlemeniz önerilir.`, "ai");
+            addMessage(`KENSUW AI Coach Analizi: "${text}" sorusu için seçilen harita üzerindeki taktiksel noktalar işaretlenmiştir.`, "ai");
         }, 800);
     }
 
