@@ -16,10 +16,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: text })
             });
+
+            if (!response.ok) {
+                throw new Error("Sunucu yanıt vermedi");
+            }
+
             const data = await response.json();
             addMessage(data.response, "ai");
         } catch (err) {
-            addMessage("🚨 KENSUW Coach: Analiz sunucusuna erişilemedi.", "ai");
+            addMessage("🚨 KENSUW Coach: Mesaj gönderilemedi. Lütfen bağlantınızı kontrol edin.", "ai");
         }
     }
 
@@ -28,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
         msgDiv.className = `message ${sender === 'user' ? 'user-message' : 'ai-message'}`;
         
         const formattedText = text.replace(/\n/g, "<br>");
-        msgDiv.innerHTML = `<div class="message-content">${sender === 'ai' ? '<strong>KENSUW COACH:</strong><br>' : ''}${formattedText}</div>`;
+        msgDiv.innerHTML = `<div class="message-content">${formattedText}</div>`;
         
         chatMessages.appendChild(msgDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -36,10 +41,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     sendBtn.addEventListener("click", sendMessage);
     userInput.addEventListener("keypress", (e) => {
-        if (e.key === "Enter") sendMessage();
+        if (e.key === "Enter") {
+            e.preventDefault();
+            sendMessage();
+        }
     });
 
     window.sendQuickPrompt = function(promptText) {
+        userInput.value = promptText;
+        sendMessage();
+    };
+});
         userInput.value = promptText;
         sendMessage();
     };
