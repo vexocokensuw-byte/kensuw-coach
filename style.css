@@ -2,12 +2,12 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
 body {
-    background-color: #0c1017;
-    color: #e6edf3;
+    background-color: #0b1017;
+    color: #e2e8f0;
     height: 100vh;
     overflow: hidden;
 }
@@ -19,20 +19,15 @@ body {
     position: relative;
 }
 
-/* HARİTA BÖLÜMÜ (SOL) */
+/* HARİTA BÖLÜMÜ (SOL/ÜST) */
 .map-section {
-    width: 55%;
+    width: 60%;
     height: 100%;
-    background-color: #121824;
+    background-color: #111827;
     display: flex;
     flex-direction: column;
-    border-right: 2px solid #1f293d;
+    border-right: 1px solid #1e293b;
     position: relative;
-    transition: width 0.3s ease;
-}
-
-.map-section.expanded {
-    width: 80%;
 }
 
 .map-header {
@@ -41,22 +36,33 @@ body {
     align-items: center;
     padding: 12px 20px;
     background-color: #1a2332;
-    border-bottom: 1px solid #232e42;
+    border-bottom: 1px solid #243147;
+}
+
+.brand-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    color: #34c759;
+    font-size: 16px;
+    letter-spacing: 0.5px;
 }
 
 .map-selector {
     display: flex;
-    gap: 10px;
+    gap: 8px;
 }
 
 .map-btn {
-    background: #232e42;
-    color: #8b949e;
-    border: 1px solid #30363d;
-    padding: 8px 16px;
+    background: #1e293b;
+    color: #94a3b8;
+    border: 1px solid #334155;
+    padding: 6px 14px;
     border-radius: 6px;
     cursor: pointer;
     font-weight: 600;
+    font-size: 13px;
     transition: all 0.2s ease;
 }
 
@@ -64,14 +70,14 @@ body {
     background: linear-gradient(135deg, #007aff, #34c759);
     color: #ffffff;
     border-color: transparent;
-    box-shadow: 0 0 10px rgba(52, 199, 89, 0.3);
+    box-shadow: 0 0 12px rgba(52, 199, 89, 0.3);
 }
 
 .mobile-map-close {
     display: none;
     background: transparent;
     border: none;
-    color: #ff3b30;
+    color: #ef4444;
     font-size: 22px;
     cursor: pointer;
 }
@@ -83,7 +89,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #080b10;
+    background-color: #06090e;
 }
 
 .map-wrapper {
@@ -101,6 +107,7 @@ body {
     object-fit: contain;
     display: block;
     user-select: none;
+    border-radius: 4px;
 }
 
 #drawingCanvas {
@@ -110,14 +117,9 @@ body {
     width: 100%;
     height: 100%;
     cursor: crosshair;
-    pointer-events: none;
 }
 
-#drawingCanvas.active {
-    pointer-events: auto;
-}
-
-/* ŞEHİR NOKTALARI OVERLAY */
+/* ŞEHİR DOKUNMA NOKTALARI */
 #cityOverlay {
     position: absolute;
     top: 0;
@@ -134,33 +136,33 @@ body {
 
 .city-dot {
     position: absolute;
-    width: 18px;
-    height: 18px;
+    width: 14px;
+    height: 14px;
     background-color: #007aff;
     border: 2px solid #ffffff;
     border-radius: 50%;
     cursor: pointer;
     transform: translate(-50%, -50%);
     pointer-events: auto;
-    box-shadow: 0 0 8px #007aff;
-    animation: pulse 1.8s infinite;
+    box-shadow: 0 0 10px #007aff;
+    animation: pulse 2s infinite;
 }
 
 @keyframes pulse {
-    0% { transform: translate(-50%, -50%) scale(0.95); box-shadow: 0 0 0 0 rgba(0, 122, 255, 0.7); }
-    70% { transform: translate(-50%, -50%) scale(1.1); box-shadow: 0 0 0 10px rgba(0, 122, 255, 0); }
-    100% { transform: translate(-50%, -50%) scale(0.95); box-shadow: 0 0 0 0 rgba(0, 122, 255, 0); }
+    0% { transform: translate(-50%, -50%) scale(0.9); box-shadow: 0 0 0 0 rgba(0, 122, 255, 0.7); }
+    70% { transform: translate(-50%, -50%) scale(1.2); box-shadow: 0 0 0 8px rgba(0, 122, 255, 0); }
+    100% { transform: translate(-50%, -50%) scale(0.9); box-shadow: 0 0 0 0 rgba(0, 122, 255, 0); }
 }
 
-/* ALT BAR ARAÇLAR */
+/* ALT ÇİZİM KONTROL BARI */
 .map-controls {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 15px;
+    padding: 10px 16px;
     background-color: #1a2332;
-    border-top: 1px solid #232e42;
-    gap: 15px;
+    border-top: 1px solid #243147;
+    gap: 12px;
 }
 
 .control-group {
@@ -170,9 +172,9 @@ body {
 }
 
 .tool-btn {
-    background-color: #232e42;
-    color: #e6edf3;
-    border: 1px solid #30363d;
+    background-color: #1e293b;
+    color: #e2e8f0;
+    border: 1px solid #334155;
     padding: 8px 12px;
     border-radius: 6px;
     cursor: pointer;
@@ -182,81 +184,42 @@ body {
     gap: 6px;
 }
 
-.status-badge {
-    font-size: 10px;
-    padding: 2px 6px;
-    border-radius: 4px;
-    background-color: #ff3b30;
-    color: white;
-}
-
-.status-badge.open {
-    background-color: #34c759;
-}
-
-.pen-settings {
-    display: none;
-    align-items: center;
-    gap: 8px;
-    background: #0d1117;
-    padding: 4px 8px;
-    border-radius: 6px;
-    border: 1px solid #30363d;
-}
-
-.pen-settings.active {
+.color-palette {
     display: flex;
+    gap: 6px;
+    align-items: center;
 }
 
 .color-picker {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     cursor: pointer;
     border: 2px solid transparent;
+    transition: transform 0.15s ease;
 }
 
-.color-picker.red { background-color: #ff3b30; }
-.color-picker.green { background-color: #34c759; }
-.color-picker.blue { background-color: #007aff; }
-.color-picker.active { border-color: #ffffff; }
+.color-picker.active {
+    border-color: #ffffff;
+    transform: scale(1.2);
+}
 
-#penThickness {
-    background: #161b22;
-    color: white;
-    border: 1px solid #30363d;
+.thickness-select {
+    background: #0f172a;
+    color: #ffffff;
+    border: 1px solid #334155;
     border-radius: 4px;
-    padding: 2px 4px;
+    padding: 4px 6px;
     font-size: 12px;
 }
 
-.tool-btn-sm {
-    background: transparent;
-    border: none;
-    color: #8b949e;
+.tool-btn-danger {
+    background: #ef444422;
+    border: 1px solid #ef444466;
+    color: #ef4444;
+    padding: 8px 10px;
+    border-radius: 6px;
     cursor: pointer;
-    font-size: 14px;
-}
-
-.tool-btn-sm:hover { color: #ff3b30; }
-
-.resize-handle {
-    position: absolute;
-    right: -15px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #007aff, #34c759);
-    border: none;
-    color: white;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 0 10px rgba(0,0,0,0.5);
-    z-index: 10;
 }
 
 /* SOHBET BÖLÜMÜ (SAĞ) */
@@ -265,34 +228,45 @@ body {
     height: 100%;
     display: flex;
     flex-direction: column;
-    background-color: #0d1117;
+    background-color: #0b1017;
 }
 
 .chat-header {
-    padding: 15px 20px;
-    background-color: #161b22;
-    border-bottom: 1px solid #21262d;
+    padding: 16px 20px;
+    background-color: #161f2c;
+    border-bottom: 1px solid #222f43;
 }
 
-.chat-header h2 {
-    font-size: 18px;
+.chat-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.chat-title i {
+    font-size: 24px;
     color: #34c759;
 }
 
-.chat-header p {
+.chat-title h2 {
+    font-size: 16px;
+    color: #ffffff;
+}
+
+.sub-status {
     font-size: 12px;
-    color: #8b949e;
+    color: #94a3b8;
 }
 
 .mobile-map-trigger-container {
     display: none;
     padding: 10px;
-    background-color: #121824;
+    background-color: #111827;
 }
 
 .mobile-map-open-btn {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
     background: linear-gradient(135deg, #007aff, #34c759);
     color: white;
     border: none;
@@ -308,12 +282,12 @@ body {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 16px;
 }
 
 .message {
     display: flex;
-    max-width: 85%;
+    max-width: 90%;
 }
 
 .ai-message {
@@ -325,39 +299,40 @@ body {
 }
 
 .message-content {
-    padding: 12px 16px;
+    padding: 14px 18px;
     border-radius: 12px;
     font-size: 14px;
-    line-height: 1.5;
+    line-height: 1.6;
 }
 
 .ai-message .message-content {
-    background-color: #161b22;
-    border: 1px solid #21262d;
-    color: #c9d1d9;
+    background-color: #16202e;
+    border: 1px solid #223046;
+    color: #e2e8f0;
 }
 
 .user-message .message-content {
-    background-color: #007aff;
+    background: linear-gradient(135deg, #007aff, #0056b3);
     color: #ffffff;
 }
 
 .chat-input-area {
-    padding: 15px;
-    background-color: #161b22;
-    border-top: 1px solid #21262d;
+    padding: 16px;
+    background-color: #161f2c;
+    border-top: 1px solid #222f43;
     display: flex;
     gap: 10px;
 }
 
 .chat-input-area input {
     flex: 1;
-    background-color: #0d1117;
-    border: 1px solid #30363d;
-    padding: 12px 16px;
-    border-radius: 20px;
+    background-color: #0b1017;
+    border: 1px solid #334155;
+    padding: 12px 18px;
+    border-radius: 24px;
     color: white;
     outline: none;
+    font-size: 14px;
 }
 
 .chat-input-area input:focus {
@@ -365,8 +340,8 @@ body {
 }
 
 .chat-input-area button {
-    width: 44px;
-    height: 44px;
+    width: 46px;
+    height: 46px;
     border-radius: 50%;
     background: linear-gradient(135deg, #007aff, #34c759);
     border: none;
@@ -375,6 +350,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 16px;
 }
 
 /* MODAL */
@@ -385,18 +361,18 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0,0,0,0.7);
+    background: rgba(0,0,0,0.8);
     align-items: center;
     justify-content: center;
     z-index: 100;
 }
 
 .modal-content {
-    background: #161b22;
-    border: 1px solid #30363d;
-    padding: 20px;
+    background: #16202e;
+    border: 1px solid #334155;
+    padding: 24px;
     border-radius: 12px;
-    max-width: 400px;
+    max-width: 420px;
     width: 90%;
     position: relative;
     color: white;
@@ -404,14 +380,14 @@ body {
 
 .modal-close {
     position: absolute;
-    right: 15px;
-    top: 10px;
+    right: 16px;
+    top: 12px;
     font-size: 24px;
     cursor: pointer;
-    color: #8b949e;
+    color: #94a3b8;
 }
 
-/* MOBİL TASARIM DUYARLILIĞI (RESPONSIVE) */
+/* MOBİL TASARIM (TELEFON UYUMLU) */
 @media (max-width: 768px) {
     .map-section {
         position: fixed;
@@ -429,10 +405,6 @@ body {
 
     .mobile-map-close {
         display: block;
-    }
-
-    .resize-handle {
-        display: none;
     }
 
     .mobile-map-trigger-container {
