@@ -15,17 +15,20 @@
         .brand-title { display: flex; align-items: center; gap: 8px; font-weight: 700; color: #34c759; font-size: 16px; }
         .map-selector { display: flex; gap: 8px; z-index: 101; }
         .map-btn { background: #1e293b; color: #94a3b8; border: 1px solid #334155; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; }
-        .map-btn.active, .map-btn:hover { background: linear-gradient(135deg, #007aff, #34c759); color: #ffffff; border-color: transparent; box-shadow: 0 0 12px rgba(52, 199, 89, 0.3); }
+        .map-btn.active, .map-btn:hover { background: linear-gradient(135deg, #007aff, #34c759); color: #ffffff; border-color: transparent; }
         .mobile-map-close { display: none; background: transparent; border: none; color: #ef4444; font-size: 22px; cursor: pointer; }
 
-        .map-display-container { flex: 1; position: relative; width: 100%; height: 100%; overflow: hidden; background-color: #0b131e; }
-        .map-wrapper { position: relative; width: 100%; height: 100%; }
+        /* HARİTA ALANI */
+        .map-display-container { flex: 1; position: relative; width: 100%; height: 100%; overflow: hidden; background-color: #0f172a; display: flex; align-items: center; justify-content: center; }
         
+        .map-box { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+        
+        /* SVG VE CANVAS KATMANLARI */
+        .svg-tactical-map { width: 100%; height: 100%; background: #0d1b2a; }
         #drawCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: crosshair; z-index: 10; touch-action: none; }
 
-        #cityOverlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 20; display: block; }
-        .city-dot { position: absolute; width: 18px; height: 18px; background-color: #007aff; border: 2px solid #ffffff; border-radius: 50%; cursor: pointer; transform: translate(-50%, -50%); pointer-events: auto; box-shadow: 0 0 10px #007aff; animation: pulse 1.8s infinite; }
-        @keyframes pulse { 0% { transform: translate(-50%, -50%) scale(0.9); } 70% { transform: translate(-50%, -50%) scale(1.2); } 100% { transform: translate(-50%, -50%) scale(0.9); } }
+        #cityOverlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 20; }
+        .city-dot { position: absolute; width: 18px; height: 18px; background-color: #007aff; border: 2px solid #ffffff; border-radius: 50%; cursor: pointer; transform: translate(-50%, -50%); pointer-events: auto; box-shadow: 0 0 10px #007aff; }
 
         .map-controls { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; background-color: #1a2332; gap: 12px; z-index: 100; }
         .control-group { display: flex; align-items: center; gap: 10px; }
@@ -90,7 +93,28 @@
             </div>
 
             <div class="map-display-container" id="mapDisplayContainer">
-                <div class="map-wrapper" id="mapWrapper">
+                <div class="map-box">
+                    <!-- DOĞRUDAN HTML SVG HARİTA (SİYAH EKRAN VERMEZ) -->
+                    <svg class="svg-tactical-map" id="svgMap" viewBox="0 0 800 600" preserveAspectRatio="none">
+                        <rect width="800" height="600" id="mapBg" fill="#0d1b2a"/>
+                        <path id="mainIsland" d="M 80,60 L 720,60 L 720,400 L 80,400 Z" fill="#1b3823" stroke="#2a5737" stroke-width="4"/>
+                        <path id="subIsland" d="M 220,450 L 580,450 L 580,560 L 220,560 Z" fill="#162e1d" stroke="#2a5737" stroke-width="3"/>
+                        <rect id="bridge1" x="320" y="400" width="20" height="50" fill="#4a5568"/>
+                        <rect id="bridge2" x="460" y="400" width="20" height="50" fill="#4a5568"/>
+                        
+                        <!-- Izgaralar -->
+                        <g stroke="rgba(255,255,255,0.15)" stroke-width="1">
+                            <line x1="100" y1="0" x2="100" y2="600"/><line x1="200" y1="0" x2="200" y2="600"/>
+                            <line x1="300" y1="0" x2="300" y2="600"/><line x1="400" y1="0" x2="400" y2="600"/>
+                            <line x1="500" y1="0" x2="500" y2="600"/><line x1="600" y1="0" x2="600" y2="600"/>
+                            <line x1="700" y1="0" x2="700" y2="600"/>
+                            <line x1="0" y1="100" x2="800" y2="100"/><line x1="0" y1="200" x2="800" y2="200"/>
+                            <line x1="0" y1="300" x2="800" y2="300"/><line x1="0" y1="400" x2="800" y2="400"/>
+                            <line x1="0" y1="500" x2="800" y2="500"/>
+                        </g>
+                        <text x="20" y="35" id="mapTitle" fill="rgba(255,255,255,0.6)" font-size="16" font-weight="bold">ERANGEL TACTICAL MAP (MILITARY GRID)</text>
+                    </svg>
+
                     <canvas id="drawCanvas"></canvas>
                     <div id="cityOverlay"></div>
                 </div>
