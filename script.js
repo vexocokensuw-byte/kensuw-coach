@@ -1,42 +1,31 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const mapData = {
+    // KESİNTİSİZ HARİTA RESİM LINKLERI VE DROP NOKTALARI
+    const maps = {
         erangel: {
-            title: "ERANGEL TACTICAL MAP (MILITARY GRID)",
-            bg: "#0f1d2a",
-            island: "#1b3823",
-            subIsland: "#162e1d",
-            showSub: true,
+            img: "https://images.squarespace-cdn.com/content/v1/59af2189c534a58e4917a228/1505322965706-L9Z8F9T6L9D14C3E2F40/Erangel_Main_Low.jpg",
             cities: [
-                { name: "Pochinki (Main Drop)", x: "48%", y: "45%", info: "Pochinki: Erangel merkez drop ve rotasyon kavşağı." },
-                { name: "School & Apartments", x: "54%", y: "38%", info: "School: Erken çatışma ve çatı kontrol noktası." },
-                { name: "Sosnovka Military Base", x: "60%", y: "84%", info: "Military Base: Ada bölgesi. Köprü kontrolü şart." },
-                { name: "Georgopol Containers", x: "24%", y: "25%", info: "Georgopol: Konteyner splitleri." },
-                { name: "Mylta Power", x: "82%", y: "54%", info: "Mylta Power: Doğu kanadı güvenli drop alanı." }
+                { name: "Pochinki (Main)", x: "47%", y: "49%", info: "Pochinki: Erangel merkez drop ve rotasyon kavşağı." },
+                { name: "School & Apartments", x: "53%", y: "42%", info: "School: Erken çatışma ve çatı kontrol noktası." },
+                { name: "Sosnovka Military Base", x: "60%", y: "82%", info: "Military Base: Ada bölgesi. Köprü kontrolü önemli." },
+                { name: "Georgopol Containers", x: "24%", y: "28%", info: "Georgopol: Konteyner splitleri ve Batı rotasyonu." },
+                { name: "Mylta Power", x: "84%", y: "58%", info: "Mylta Power: Doğu kanadı güvenli drop alanı." }
             ]
         },
         miramar: {
-            title: "MIRAMAR TACTICAL MAP (MILITARY GRID)",
-            bg: "#0f1d2a",
-            island: "#42321e",
-            subIsland: "#332616",
-            showSub: false,
+            img: "https://images.squarespace-cdn.com/content/v1/59af2189c534a58e4917a228/1513813958045-A6S9N2M8D9F0E1W2R3T4/Miramar_Main_Low.jpg",
             cities: [
-                { name: "Pecado (Main Drop)", x: "48%", y: "50%", info: "Pecado: Miramar kalbi. Casino ve Arena noktası." },
-                { name: "Hacienda del Patron", x: "60%", y: "35%", info: "Hacienda: Dar alanda hızlı temizleme bölgesi." },
-                { name: "Los Leones (Main)", x: "68%", y: "68%", info: "Los Leones: Devasa metropol alanı." },
-                { name: "El Pozo", x: "28%", y: "22%", info: "El Pozo: Kuzeybatı büyük drop alanı." }
+                { name: "Pecado (Main)", x: "48%", y: "54%", info: "Pecado: Miramar kalbi. Casino ve Arena noktası." },
+                { name: "Hacienda del Patron", x: "60%", y: "39%", info: "Hacienda: Dar alanda hızlı temizleme bölgesi." },
+                { name: "Los Leones (Main)", x: "68%", y: "70%", info: "Los Leones: Devasa metropol alanı." },
+                { name: "El Pozo", x: "28%", y: "25%", info: "El Pozo: Kuzeybatı büyük drop alanı." }
             ]
         },
         rondo: {
-            title: "RONDO TACTICAL MAP (MILITARY GRID)",
-            bg: "#0a131c",
-            island: "#1a2c3d",
-            subIsland: "#12202e",
-            showSub: false,
+            img: "https://i.ibb.co/Lp2p68t/rondo-pubg.jpg",
             cities: [
-                { name: "Jadam City (Main)", x: "52%", y: "52%", info: "Jadam City: Yüksek dikey binalar." },
-                { name: "NEOX Factory", x: "70%", y: "30%", info: "NEOX Factory: Fabrika bölgesi." },
-                { name: "Yu Lin", x: "35%", y: "38%", info: "Yu Lin: Dar sokaklar ve pusu alanları." }
+                { name: "Jadam City (Main)", x: "52%", y: "58%", info: "Jadam City: Yüksek dikey binalar." },
+                { name: "NEOX Factory", x: "70%", y: "35%", info: "NEOX Factory: Fabrika bölgesi." },
+                { name: "Yu Lin", x: "35%", y: "40%", info: "Yu Lin: Dar sokaklar ve pusu alanları." }
             ]
         }
     };
@@ -47,6 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let isPencilActive = true;
     let isCityActive = true;
 
+    const mapImg = document.getElementById("mapImg");
     const canvas = document.getElementById("drawCanvas");
     const ctx = canvas.getContext("2d");
     const container = document.getElementById("mapDisplayContainer");
@@ -60,38 +50,22 @@ document.addEventListener("DOMContentLoaded", () => {
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
 
-    // HARİTA DEĞİŞTİRME
+    // HARİTA DEĞİŞTİRME MANTIĞI
     function switchMap(key) {
         currentMapKey = key;
-        const m = mapData[key];
-
-        document.getElementById("mapBg").setAttribute("fill", m.bg);
-        document.getElementById("mapIsland").setAttribute("fill", m.island);
-        document.getElementById("mapTitleText").textContent = m.title;
-
-        const sub = document.getElementById("mapSubIsland");
-        const b1 = document.getElementById("bridge1");
-        const b2 = document.getElementById("bridge2");
-
-        if (m.showSub) {
-            sub.style.display = "block";
-            b1.style.display = "block";
-            b2.style.display = "block";
-        } else {
-            sub.style.display = "none";
-            b1.style.display = "none";
-            b2.style.display = "none";
-        }
-
+        const m = maps[key];
+        
+        mapImg.src = m.img;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         renderCities();
     }
 
+    // ŞEHİR NOKTALARINI YÜKLE
     function renderCities() {
         cityOverlay.innerHTML = "";
         if (!isCityActive) return;
 
-        const cities = mapData[currentMapKey].cities;
+        const cities = maps[currentMapKey].cities;
         cities.forEach(c => {
             const dot = document.createElement("div");
             dot.className = "city-dot";
@@ -110,21 +84,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     renderCities();
 
-    // HARİTA BUTONLARI TIKLAMA
-    const btnErangel = document.getElementById("btnErangel");
-    const btnMiramar = document.getElementById("btnMiramar");
-    const btnRondo = document.getElementById("btnRondo");
-
-    if (btnErangel) btnErangel.onclick = (e) => { setActiveBtn(e.target); switchMap("erangel"); };
-    if (btnMiramar) btnMiramar.onclick = (e) => { setActiveBtn(e.target); switchMap("miramar"); };
-    if (btnRondo) btnRondo.onclick = (e) => { setActiveBtn(e.target); switchMap("rondo"); };
+    // BUTON TIKLAMALARI
+    document.getElementById("btnErangel").onclick = (e) => { setActiveBtn(e.target); switchMap("erangel"); };
+    document.getElementById("btnMiramar").onclick = (e) => { setActiveBtn(e.target); switchMap("miramar"); };
+    document.getElementById("btnRondo").onclick = (e) => { setActiveBtn(e.target); switchMap("rondo"); };
 
     function setActiveBtn(target) {
         document.querySelectorAll(".map-btn").forEach(b => b.classList.remove("active"));
         target.classList.add("active");
     }
 
-    // ÇİZİM KODLARI
+    // ÇİZİM MOTORU (TOUCH & MOUSE)
     let isDrawing = false;
 
     function getPos(e) {
@@ -162,7 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
     canvas.addEventListener("touchmove", (e) => { moveDraw(e); e.preventDefault(); });
     canvas.addEventListener("touchend", stopDraw);
 
-    // RENK SEÇİMİ
+    // KALEM VE RENKLER
     document.querySelectorAll(".color-picker").forEach(p => {
         p.onclick = (e) => {
             document.querySelectorAll(".color-picker").forEach(x => x.classList.remove("active"));
@@ -187,7 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("cityInfoToggleBtn").onclick = (e) => {
         isCityActive = !isCityActive;
         e.currentTarget.classList.toggle("active", isCityActive);
-        cityOverlay.classList.toggle("active", isCityActive);
+        cityOverlay.style.display = isCityActive ? "block" : "none";
         renderCities();
     };
 
@@ -195,7 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("cityModal").style.display = "none";
     };
 
-    // MOBİL
+    // MOBİL HARİTA AÇ/KAPAT
     document.getElementById("mobileMapOpenBtn").onclick = () => {
         document.getElementById("mapSection").classList.add("mobile-active");
         setTimeout(resizeCanvas, 100);
@@ -205,7 +175,7 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("mapSection").classList.remove("mobile-active");
     };
 
-    // CHAT
+    // CHAT / IGL YANIT MOTORU
     const userInput = document.getElementById("userInput");
     const sendBtn = document.getElementById("sendBtn");
     const chatMessages = document.getElementById("chatMessages");
