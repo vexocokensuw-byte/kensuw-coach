@@ -21,13 +21,22 @@ NASIL BİR BEYİN VE DİLE SAHİPSİN:
 4. SORU SORARAK DİYALOGU CANLI TUT: Analiz yaptıktan sonra takip soruları sor.
 """
 
-# Google API'de çalışan tüm güncel modelleri sırayla dener
-MODELS_TO_TRY = [
-    "gemini-1.5-flash",
-    "gemini-1.5-flash-latest",
-    "gemini-1.5-pro",
-    "gemini-2.0-flash-exp"
-]
+def get_active_model():
+    """Hesabında aktif olan geçerli bir modeli otomatik bulur"""
+    try:
+        list_url = f"https://generativelanguage.googleapis.com/v1beta/models?key={API_KEY}"
+        res = requests.get(list_url, timeout=10)
+        if res.status_code == 200:
+            models_data = res.json().get('models', [])
+            for m in models_data:
+                name = m.get('name', '')
+                # generateContent destekleyen ilk flash veya pro modelini seçer
+                if "generateContent" in m.get('supportedGenerationMethods', []):
+                    if "flash" in name or "pro" in name:
+                        return name.replace("models/", "")
+    except Exception:
+        pass
+    return "gemini-1.5-flash"  # Varsayılan yedek
 
 @app.route('/')
 def home():
@@ -45,6 +54,11 @@ def chat():
         if not API_KEY:
             return jsonify({'response': '🚨 **API Key Eksik:** Render panelinde `GEMINI_API_KEY` tanımlı değil.'})
 
+        # Çalışan modeli otomatik tespit et
+        active_model = get_active_model()
+
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{active_model}:generateContent?key={API_KEY}"
+        
         payload = {
             "system_instruction": {
                 "parts": [{"text": SYSTEM_PROMPT}]
@@ -61,22 +75,15 @@ def chat():
             }
         }
 
-        # Sırayla modelleri dener, çalışan ilk modelden cevabı alır
-        last_error = None
-        for model in MODELS_TO_TRY:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={API_KEY}"
-            try:
-                response = requests.post(url, json=payload, timeout=12)
-                res_data = response.json()
-                if response.status_code == 200:
-                    ai_text = res_data['candidates'][0]['content']['parts'][0]['text']
-                    return jsonify({'response': ai_text})
-                else:
-                    last_error = res_data.get('error', {}).get('message', 'Bilinmeyen Hata')
-            except Exception as ex:
-                last_error = str(ex)
+        response = requests.post(url, json=payload, timeout=15)
+        res_data = response.json()
 
-        return jsonify({'response': f"🚨 **Google API Hatası:** {last_error}"})
+        if response.status_code == 200:
+            ai_text = res_data['candidates'][0]['content']['parts'][0]['text']
+            return jsonify({'response': ai_text})
+        else:
+            error_msg = res_data.get('error', {}).get('message', 'Bilinmeyen Hata')
+            return jsonify({'response': f"🚨 **Google API Hatası ({response.status_code}):** {error_msg}"})
 
     except Exception as e:
         return jsonify({'response': f"🚨 **Sunucu Hatası:** {str(e)}"}), 500
